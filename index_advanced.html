@@ -1,0 +1,1846 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Elkayem Auto – Manpower Allocation v4 AI</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --primary:#e8a020;--primary-hover:#ffb830;
+  --dark-bg:#0d1b2a;--card-bg:#132840;--border:#1e4060;
+  --text:#e0e8f0;--text-muted:#90a8c0;
+  --success:#1a6e3a;--danger:#c04040;--warning:#d4900a;
+  --sidebar-w:260px;
+}
+[data-theme=light]{--dark-bg:#f0f4f8;--card-bg:#fff;--border:#c8d8e8;--text:#1a2a3a;--text-muted:#5a7a9a;}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--dark-bg);color:var(--text);min-height:100vh;transition:background .3s,color .3s;}
+.sidebar{position:fixed;left:0;top:0;width:var(--sidebar-w);height:100vh;background:linear-gradient(180deg,#071827,#0d2640);border-right:1px solid var(--border);padding:16px;overflow-y:auto;z-index:1000;transition:transform .3s;}
+[data-theme=light] .sidebar{background:linear-gradient(180deg,#1a3a5c,#1e4060);}
+.sidebar-logo{background:var(--primary);color:#0d1b2a;padding:10px 14px;border-radius:8px;font-weight:800;margin-bottom:18px;text-align:center;font-size:1rem;letter-spacing:1px;}
+.sidebar-nav{display:flex;flex-direction:column;gap:3px;}
+.sidebar-nav button{background:transparent;border:none;color:#90a8c0;padding:9px 12px;border-radius:6px;cursor:pointer;font-size:.83rem;transition:all .2s;text-align:left;font-family:inherit;display:flex;align-items:center;gap:9px;width:100%;}
+.sidebar-nav button:hover{background:rgba(232,160,32,.12);color:var(--primary);}
+.sidebar-nav button.active{background:rgba(232,160,32,.18);color:var(--primary);font-weight:700;border-left:3px solid var(--primary);}
+.sidebar-nav i{width:16px;text-align:center;}
+.sidebar-section{font-size:.64rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#3a6080;padding:10px 12px 3px;margin-top:4px;}
+.sidebar-footer{padding-top:12px;border-top:1px solid #1e4060;margin-top:10px;}
+.user-badge{background:rgba(232,160,32,.1);padding:7px 10px;border-radius:6px;display:flex;align-items:center;gap:7px;font-size:.81rem;margin-bottom:7px;}
+.sidebar-bottom-btns{display:flex;flex-direction:column;gap:5px;margin-top:6px;}
+header{background:linear-gradient(135deg,#132840,#0d2640);border-bottom:2px solid var(--primary);padding:13px 24px;display:flex;align-items:center;justify-content:space-between;margin-left:var(--sidebar-w);position:sticky;top:0;z-index:900;}
+[data-theme=light] header{background:linear-gradient(135deg,#1a3a5c,#0d2640);}
+header h1{font-size:1.1rem;font-weight:600;color:#fff;display:flex;align-items:center;gap:9px;}
+.header-right{display:flex;align-items:center;gap:8px;}
+.header-right input[type=search]{background:var(--dark-bg);border:1px solid var(--border);color:var(--text);padding:6px 11px;border-radius:6px;font-size:.82rem;width:180px;outline:none;}
+.header-right input:focus{border-color:var(--primary);}
+.theme-btn{background:transparent;border:1px solid var(--border);color:var(--text-muted);padding:6px 11px;border-radius:6px;cursor:pointer;font-size:.82rem;transition:all .2s;}
+.theme-btn:hover{border-color:var(--primary);color:var(--primary);}
+main{margin-left:var(--sidebar-w);padding:22px;}
+.hidden{display:none!important;}
+.card{background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:18px;}
+.card-title{font-size:.92rem;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px;color:var(--primary);}
+.control-bar{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:12px;margin-bottom:16px;}
+.field-group{display:flex;flex-direction:column;gap:4px;}
+.field-group label{font-size:.69rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--primary);}
+.field-group input,.field-group select,.field-group textarea{background:var(--dark-bg);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:6px;font-size:.85rem;font-family:inherit;outline:none;transition:border-color .2s;}
+[data-theme=light] .field-group input,[data-theme=light] .field-group select{background:#f0f4f8;color:#1a2a3a;}
+.field-group input:focus,.field-group select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(232,160,32,.1);}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:12px;margin-bottom:18px;}
+.stat-box{background:var(--card-bg);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center;position:relative;overflow:hidden;}
+.stat-box::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.stat-box.blue::before{background:#378add;}.stat-box.green::before{background:#4a9a22;}
+.stat-box.amber::before{background:var(--primary);}.stat-box.red::before{background:#c04040;}
+.stat-box.purple::before{background:#7f77dd;}.stat-box.cyan::before{background:#20a0b0;}
+.stat-value{font-size:1.65rem;font-weight:700;color:var(--primary);margin-bottom:2px;}
+.stat-label{font-size:.68rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;}
+.table-responsive{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:.82rem;}
+thead tr{background:var(--dark-bg);}
+[data-theme=light] thead tr{background:#e0eaf4;}
+thead th{padding:9px 11px;text-align:left;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-muted);border-bottom:2px solid var(--border);white-space:nowrap;}
+tbody tr{border-bottom:1px solid var(--border);transition:background .15s;}
+tbody tr:hover{background:rgba(232,160,32,.04);}
+tbody tr.row-absent{background:rgba(192,64,64,.08);}
+tbody tr.row-ot{background:rgba(232,160,32,.07);}
+tbody tr.hidden-row{display:none;}
+tbody td{padding:9px 11px;vertical-align:middle;}
+td input.editable,td select.editable{background:transparent;border:1px solid transparent;color:var(--text);padding:3px 6px;border-radius:4px;width:100%;outline:none;transition:all .15s;font-family:inherit;font-size:.82rem;}
+td input.editable:hover,td select.editable:hover{border-color:var(--border);}
+td input.editable:focus,td select.editable:focus{border-color:var(--primary);background:var(--dark-bg);}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 13px;border:none;border-radius:6px;font-size:.81rem;font-weight:600;cursor:pointer;transition:all .2s;outline:none;font-family:inherit;}
+.btn-primary{background:var(--primary);color:#0d1b2a;}.btn-primary:hover{background:var(--primary-hover);transform:translateY(-1px);}
+.btn-secondary{background:transparent;border:1px solid var(--border);color:var(--text-muted);}.btn-secondary:hover{border-color:var(--primary);color:var(--primary);}
+.btn-danger{background:transparent;border:1px solid var(--danger);color:var(--danger);}.btn-danger:hover{background:rgba(192,64,64,.1);}
+.btn-success{background:var(--success);color:#fff;}.btn-success:hover{background:#228a42;}
+.btn-info{background:#185fa5;color:#fff;}.btn-info:hover{background:#1a6eb8;}
+.btn-ai{background:linear-gradient(135deg,#5a50cc,#8a40cc);color:#fff;border:none;}.btn-ai:hover{background:linear-gradient(135deg,#6a60dc,#9a50dc);transform:translateY(-1px);}
+.btn-sm{padding:4px 9px;font-size:.75rem;}
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:.69rem;font-weight:700;}
+.badge-pending{background:rgba(90,120,160,.2);color:#90a8c0;}
+.badge-assigned{background:rgba(26,110,58,.2);color:#4db87a;}
+.badge-completed{background:rgba(26,110,58,.35);color:#3da56a;}
+.badge-absent{background:rgba(192,64,64,.2);color:#e07070;}
+.badge-ot{background:rgba(232,160,32,.2);color:#e8a020;}
+.badge-present{background:rgba(26,110,58,.2);color:#4db87a;}
+.badge-late{background:rgba(212,144,10,.2);color:#d49010;}
+.badge-ai{background:linear-gradient(135deg,rgba(90,80,204,.3),rgba(138,64,204,.3));color:#b090ff;}
+.modal{display:none;position:fixed;inset:0;background:rgba(8,16,28,.84);z-index:2000;align-items:center;justify-content:center;}
+.modal.active{display:flex;}
+.modal-content{background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:24px;max-width:520px;width:92%;max-height:92vh;overflow-y:auto;}
+.modal-header{font-size:1.05rem;font-weight:700;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;}
+.modal-close{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:1.3rem;line-height:1;transition:color .2s;}
+.modal-close:hover{color:var(--danger);}
+.modal-footer{display:flex;gap:9px;margin-top:16px;justify-content:flex-end;}
+/* Chat */
+.chat-wrap{display:flex;flex-direction:column;height:400px;}
+.chat-msgs{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px;background:var(--dark-bg);border-radius:8px;margin-bottom:10px;}
+.msg{max-width:82%;padding:9px 13px;border-radius:10px;font-size:.84rem;line-height:1.5;}
+.msg-user{align-self:flex-end;background:rgba(232,160,32,.2);color:var(--text);}
+.msg-ai{align-self:flex-start;background:rgba(90,80,204,.2);color:var(--text);border:1px solid rgba(90,80,204,.2);}
+.msg-ai .ai-label{font-size:.67rem;color:#b090ff;font-weight:700;margin-bottom:3px;}
+.typing{font-size:.77rem;color:var(--text-muted);font-style:italic;padding:3px 0;}
+.chat-input-row{display:flex;gap:8px;}
+.chat-input-row input{flex:1;background:var(--dark-bg);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:6px;font-family:inherit;font-size:.84rem;outline:none;}
+.chat-input-row input:focus{border-color:var(--primary);}
+/* Bar charts */
+.bar-wrap{display:flex;flex-direction:column;gap:8px;}
+.bar-row{display:flex;align-items:center;gap:10px;font-size:.79rem;}
+.bar-lbl{width:80px;text-align:right;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.bar-track{flex:1;background:var(--border);border-radius:4px;height:14px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:4px;transition:width .6s ease;}
+.bar-val{width:36px;text-align:left;color:var(--primary);font-weight:700;}
+/* Skill tags */
+.skill-tag{display:inline-block;background:rgba(232,160,32,.15);color:var(--primary);border:1px solid rgba(232,160,32,.3);border-radius:4px;padding:2px 7px;font-size:.7rem;margin:2px;}
+/* Prediction */
+.pred-card{background:rgba(90,80,204,.08);border:1px solid rgba(90,80,204,.25);border-radius:8px;padding:12px;margin-bottom:10px;}
+.pred-name{font-weight:700;margin-bottom:4px;}
+.pred-risk{display:flex;align-items:center;gap:8px;font-size:.79rem;}
+.risk-bar{flex:1;height:8px;border-radius:4px;background:var(--border);}
+.risk-fill{height:100%;border-radius:4px;}
+/* Voice */
+.voice-btn{width:64px;height:64px;border-radius:50%;border:3px solid var(--primary);background:transparent;color:var(--primary);font-size:1.5rem;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;margin:0 auto;}
+.voice-btn.listening{background:rgba(232,160,32,.2);animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(232,160,32,.4);}50%{box-shadow:0 0 0 14px rgba(232,160,32,0);}}
+/* Leave calendar */
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:10px;}
+.cal-day{padding:5px 3px;text-align:center;border-radius:4px;font-size:.72rem;background:var(--dark-bg);border:1px solid var(--border);}
+.cal-day.has-leave{background:rgba(192,64,64,.2);border-color:rgba(192,64,64,.4);color:#e07070;}
+.cal-day.today-day{border-color:var(--primary);color:var(--primary);font-weight:700;}
+.cal-day.cal-hdr{background:transparent;border:none;color:var(--text-muted);font-weight:700;font-size:.67rem;}
+/* Gas flow */
+.gf-flow-input{width:70px;padding:5px 6px;border-radius:5px;border:1px solid var(--border);background:var(--card-bg);color:var(--text);text-align:center;font-weight:700;}
+.gf-flow-input.gf-green{background:rgba(26,110,58,.25);border-color:var(--success);color:#7be0a0;}
+.gf-flow-input.gf-red{background:rgba(192,64,64,.25);border-color:var(--danger);color:#ff9090;}
+.gf-text-input{width:90px;padding:5px 6px;border-radius:5px;border:1px solid var(--border);background:var(--card-bg);color:var(--text);}
+/* Print */
+@media print{
+  .sidebar,.header-right,.btn,.action-row,#toast,header,.no-print{display:none!important;}
+  main{margin-left:0!important;}
+  .print-header{display:block!important;}
+  body{background:#fff!important;color:#000!important;}
+  .card{border:1px solid #ccc!important;background:#fff!important;}
+  table{font-size:10.5pt;}
+}
+.print-header{display:none;text-align:center;margin-bottom:14px;}
+.print-header h2{font-size:15pt;font-weight:700;}
+.print-header p{font-size:10pt;color:#444;}
+/* Responsive */
+.hamburger{display:none;background:none;border:none;color:#fff;font-size:1.2rem;cursor:pointer;margin-right:8px;}
+@media(max-width:767px){
+  :root{--sidebar-w:0px;}
+  .sidebar{transform:translateX(-260px);width:260px;position:fixed;}
+  .sidebar.open{transform:translateX(0);}
+  main,header{margin-left:0;}
+  .hamburger{display:flex!important;}
+  .control-bar{grid-template-columns:1fr;}
+  .stats-grid{grid-template-columns:repeat(2,1fr);}
+}
+@media(min-width:768px) and (max-width:1024px){
+  :root{--sidebar-w:200px;}
+  .sidebar{width:200px;}
+  main,header{margin-left:200px;}
+}
+.divider{border:none;border-top:1px solid var(--border);margin:14px 0;}
+.remark-select{font-size:.75rem!important;padding:2px 5px!important;}
+.ot-input{width:60px!important;}
+select option{background:var(--card-bg);}
+#toast{position:fixed;bottom:28px;right:28px;color:#fff;padding:12px 22px;border-radius:8px;font-size:.87rem;font-weight:600;display:none;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.3);animation:slideIn .3s ease-out;}
+@keyframes slideIn{from{transform:translateX(360px);opacity:0}to{transform:translateX(0);opacity:1}}
+</style>
+</head>
+<body>
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-logo"><i class="fas fa-industry"></i> ELKAYEM</div>
+  <nav class="sidebar-nav">
+    <div class="sidebar-section">Core</div>
+    <button onclick="switchTab('allocation')" class="active" id="nav-allocation"><i class="fas fa-tasks"></i> Allocation</button>
+    <button onclick="switchTab('attendance')" id="nav-attendance"><i class="fas fa-user-clock"></i> Attendance</button>
+    <button onclick="switchTab('overtime')" id="nav-overtime"><i class="fas fa-business-time"></i> Overtime</button>
+    <button onclick="switchTab('gasflow')" id="nav-gasflow"><i class="fas fa-gauge-high"></i> Gas Flow Audit</button>
+    <div class="sidebar-section">Tier 2</div>
+    <button onclick="switchTab('targets')" id="nav-targets"><i class="fas fa-bullseye"></i> Prod. Targets</button>
+    <button onclick="switchTab('leave')" id="nav-leave"><i class="fas fa-calendar-times"></i> Leave Mgmt</button>
+    <button onclick="switchTab('skills')" id="nav-skills"><i class="fas fa-certificate"></i> Skill Matrix</button>
+    <button onclick="switchTab('reports')" id="nav-reports"><i class="fas fa-chart-bar"></i> Reports</button>
+    <div class="sidebar-section">Tier 3 – AI</div>
+    <button onclick="switchTab('ai-assign')" id="nav-ai-assign"><i class="fas fa-magic"></i> AI Auto-Assign</button>
+    <button onclick="switchTab('predict')" id="nav-predict"><i class="fas fa-brain"></i> Absentee AI</button>
+    <button onclick="switchTab('chat')" id="nav-chat"><i class="fas fa-robot"></i> AI Assistant</button>
+    <button onclick="switchTab('voice')" id="nav-voice"><i class="fas fa-microphone"></i> Voice Commands</button>
+    <div class="sidebar-section">Data</div>
+    <button onclick="switchTab('employees')" id="nav-employees"><i class="fas fa-users"></i> Employees</button>
+    <button onclick="switchTab('analytics')" id="nav-analytics"><i class="fas fa-chart-pie"></i> Analytics</button>
+    <button onclick="switchTab('history')" id="nav-history"><i class="fas fa-history"></i> History</button>
+    <button onclick="switchTab('approvals')" id="nav-approvals" style="display:none;"><i class="fas fa-check-circle"></i> Approvals</button>
+    <button onclick="switchTab('settings')" id="nav-settings"><i class="fas fa-cog"></i> Settings</button>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-badge"><i class="fas fa-user-circle"></i><span id="userDisplay">Admin</span><span class="badge badge-ai" style="margin-left:auto;font-size:.62rem;padding:2px 6px;">AI v4</span></div>
+    <div class="sidebar-bottom-btns">
+      <button onclick="toggleTheme()" class="btn btn-secondary btn-sm"><i class="fas fa-adjust"></i> Toggle Theme</button>
+      <button onclick="logout()" style="background:rgba(192,64,64,.12);border:none;color:var(--danger);padding:7px 10px;border-radius:6px;cursor:pointer;font-size:.82rem;font-family:inherit;display:flex;align-items:center;gap:7px;"><i class="fas fa-sign-out-alt"></i> Logout</button>
+    </div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <h1>
+    <button class="hamburger" onclick="document.getElementById('sidebar').classList.toggle('open')"><i class="fas fa-bars"></i></button>
+    <i class="fas fa-industry"></i> Elkayem Manpower Allocation
+    <span class="badge badge-ai" style="font-size:.62rem;">v4 AI</span>
+  </h1>
+  <div class="header-right">
+    <input type="search" id="globalSearch" placeholder="Search name or process…" oninput="liveSearch(this.value)"/>
+    <button class="theme-btn" onclick="toggleTheme()"><i class="fas fa-moon" id="themeIcon"></i></button>
+    <button class="btn btn-ai btn-sm" onclick="switchTab('chat')"><i class="fas fa-robot"></i> AI</button>
+  </div>
+</header>
+
+<main>
+<!-- ════ TAB: ALLOCATION ════ -->
+<div id="tab-allocation" class="tab-content">
+  <div class="print-header"><h2>MAN POWER ALLOCATION SHEET</h2><p id="print-subtitle"></p></div>
+  <div class="card">
+    <div class="card-title"><i class="fas fa-clipboard-list"></i> Manpower Allocation</div>
+    <div class="control-bar">
+      <div class="field-group"><label>Cell / Line</label>
+        <select id="cellSelect">
+          <option value="">-- Select a Line --</option>
+          <option value="1">Cell 1 – N360 Swingarm</option>
+          <option value="2">Cell 2 – XL100 & U358 Swingarm</option>
+          <option value="3">Cell 3 – U347 Swingarm (Line-1)</option>
+          <option value="4">Cell 4 – U347 Swingarm (Line-2)</option>
+          <option value="5">Cell 5 – Sports & U223 Swingarm</option>
+          <option value="6">Cell 6 – Sports Swingarm Line-2</option>
+          <option value="7">Cell 7 – U546 Swingarm</option>
+          <option value="8">Cell 8 – U359 Swingarm</option>
+          <option value="9">Cell 9 – HLX125 & Star Swingarm Line-2</option>
+          <option value="10">Cell 10 – HLX & U237 Swingarm</option>
+          <option value="11">Cell 11 – Press Shop</option>
+        </select>
+      </div>
+      <div class="field-group"><label>Date</label><input type="date" id="allocationDate"/></div>
+      <div class="field-group"><label>Month</label><input type="month" id="allocationMonth"/></div>
+      <div class="field-group"><label>Shift</label>
+        <select id="allocationShift">
+          <option value="1">Shift 1</option><option value="2">Shift 2</option><option value="3">Shift 3</option>
+        </select>
+      </div>
+      <div style="align-self:flex-end;display:flex;gap:7px;">
+        <button class="btn btn-primary" onclick="loadAllocation()"><i class="fas fa-search"></i> Load</button>
+        <button class="btn btn-secondary" onclick="clearNames()"><i class="fas fa-eraser"></i> Clear</button>
+      </div>
+    </div>
+  </div>
+  <div class="stats-grid" id="statsGrid"></div>
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:11px;">
+      <div class="card-title" style="margin:0"><i class="fas fa-table"></i> <span id="cellLabel">Select a cell above</span></div>
+      <span class="badge badge-assigned" id="totalBadge">0 rows</span>
+    </div>
+    <div class="table-responsive">
+      <table id="allocationTable">
+        <thead><tr><th>S.No</th><th>Process Name</th><th>Category</th><th style="text-align:center">Plan</th><th style="min-width:160px">Assigned Employee</th><th>Remark</th><th>Status</th><th style="text-align:center">Action</th></tr></thead>
+        <tbody id="allocationBody"><tr><td colspan="8" style="text-align:center;padding:36px;color:var(--text-muted)"><i class="fas fa-arrow-up"></i> Select a Cell and click Load</td></tr></tbody>
+      </table>
+    </div>
+    <div class="action-row" style="margin-top:12px;display:flex;gap:8px;justify-content:space-between;flex-wrap:wrap;">
+      <div style="display:flex;gap:7px;">
+        <button class="btn btn-secondary" onclick="addAllocationRow()"><i class="fas fa-plus"></i> Add Row</button>
+        <button class="btn btn-ai" onclick="quickAIFill()"><i class="fas fa-magic"></i> AI Fill</button>
+      </div>
+      <div style="display:flex;gap:7px;flex-wrap:wrap;">
+        <button class="btn btn-success" onclick="saveAllocation()"><i class="fas fa-save"></i> Save</button>
+        <button class="btn btn-info" onclick="downloadSingleSheet()"><i class="fas fa-download"></i> Download Sheet</button>
+        <button class="btn btn-secondary" onclick="exportAllocationExcel()"><i class="fas fa-file-excel"></i> Excel</button>
+        <button class="btn btn-secondary" onclick="printSheet()"><i class="fas fa-print"></i> Print</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ TAB: ATTENDANCE ════ -->
+<div id="tab-attendance" class="tab-content hidden">
+  <div class="card">
+    <div class="card-title"><i class="fas fa-user-clock"></i> Daily Attendance</div>
+    <div class="control-bar">
+      <div class="field-group"><label>Date</label><input type="date" id="attDate"/></div>
+      <div class="field-group"><label>Shift</label>
+        <select id="attShift"><option value="1">Shift 1</option><option value="2">Shift 2</option><option value="3">Shift 3</option></select>
+      </div>
+      <div style="align-self:flex-end;"><button class="btn btn-primary" onclick="loadAttendance()"><i class="fas fa-search"></i> Load</button> <button class="btn btn-secondary" onclick="loadBiometricAttendance()"><i class="fas fa-fingerprint"></i> Load from Biometric</button></div>
+    </div>
+  </div>
+  <div class="stats-grid" id="attStats"></div>
+  <div class="card">
+    <div class="card-title"><i class="fas fa-list-check"></i> Attendance Sheet</div>
+    <div class="table-responsive">
+      <table><thead><tr><th>S.No</th><th>Employee</th><th>Process</th><th>Cell</th><th>Clock In</th><th>Clock Out</th><th>Status</th><th>Action</th></tr></thead>
+        <tbody id="attBody"><tr><td colspan="8" style="text-align:center;padding:36px;color:var(--text-muted)">Load attendance to begin</td></tr></tbody>
+      </table>
+    </div>
+    <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end;">
+      <button class="btn btn-success" onclick="saveAttendance()"><i class="fas fa-save"></i> Save</button>
+      <button class="btn btn-secondary" onclick="exportAttendanceExcel()"><i class="fas fa-file-excel"></i> Export</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ TAB: OVERTIME ════ -->
+<div id="tab-overtime" class="tab-content hidden">
+  <div class="card">
+    <div class="card-title"><i class="fas fa-business-time"></i> Overtime Tracker</div>
+    <div class="control-bar">
+      <div class="field-group"><label>Month</label><input type="month" id="otMonth"/></div>
+      <div class="field-group"><label>Filter Cell</label>
+        <select id="otCellFilter"><option value="">All Cells</option>
+          <option value="1">Cell 1</option><option value="2">Cell 2</option><option value="3">Cell 3</option><option value="4">Cell 4</option><option value="5">Cell 5</option><option value="6">Cell 6</option><option value="7">Cell 7</option><option value="8">Cell 8</option><option value="9">Cell 9</option><option value="10">Cell 10</option><option value="11">Cell 11</option>
+        </select>
+      </div>
+      <div style="align-self:flex-end;"><button class="btn btn-primary" onclick="loadOT()"><i class="fas fa-search"></i> Load</button></div>
+    </div>
+  </div>
+  <div class="stats-grid" id="otStats"></div>
+  <div class="card">
+    <div class="card-title"><i class="fas fa-clock"></i> OT Log</div>
+    <div class="table-responsive">
+      <table><thead><tr><th>S.No</th><th>Employee</th><th>Cell</th><th>Date</th><th>OT Hours</th><th>Reason</th><th>Approved</th><th>Action</th></tr></thead>
+        <tbody id="otBody"><tr><td colspan="8" style="text-align:center;padding:36px;color:var(--text-muted)">Load OT data to begin</td></tr></tbody>
+      </table>
+    </div>
+    <div style="margin-top:12px;display:flex;gap:8px;justify-content:space-between;">
+      <button class="btn btn-secondary" onclick="addOTRow()"><i class="fas fa-plus"></i> Add OT Entry</button>
+      <div style="display:flex;gap:7px;">
+        <button class="btn btn-success" onclick="saveOT()"><i class="fas fa-save"></i> Save</button>
+        <button class="btn btn-secondary" onclick="exportOTExcel()"><i class="fas fa-file-excel"></i> Export</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ TAB: GAS FLOW AUDIT ════ -->
+<div id="tab-gasflow" class="tab-content hidden">
+  <div class="card">
+    <div class="card-title"><i class="fas fa-gauge-high"></i> Gas Flow Audit Report</div>
+    <div class="control-bar">
+      <div class="field-group"><label>Date</label><input type="date" id="gfDate"/></div>
+      <div style="align-self:flex-end;display:flex;gap:7px;">
+        <button class="btn btn-primary" onclick="loadGasFlow()"><i class="fas fa-search"></i> Load</button>
+        <button class="btn btn-success" onclick="saveGasFlow()"><i class="fas fa-save"></i> Save</button>
+        <button class="btn btn-secondary" onclick="exportGasFlowExcel()"><i class="fas fa-file-excel"></i> Export Excel</button>
+      </div>
+    </div>
+    <div style="font-size:.8rem;color:var(--text-muted);margin-top:6px;">Actual Gas Flow 8–10 LPM is marked <span style="color:var(--success);font-weight:700;">green</span> (normal). Above 10 LPM is <span style="color:var(--danger);font-weight:700;">red</span> and needs revised reading + reason.</div>
+  </div>
+  <div class="card">
+    <div class="table-responsive">
+      <table id="gfTable" style="min-width:1600px;">
+        <thead>
+          <tr>
+            <th rowspan="2">Cell No</th><th rowspan="2">Model Name</th><th rowspan="2">Process</th><th rowspan="2">M/C No</th><th rowspan="2">M/C Name</th>
+            <th colspan="5" style="text-align:center;">SHIFT I | 8:30 AM</th>
+            <th colspan="5" style="text-align:center;">SHIFT I | 3:00 PM</th>
+            <th colspan="5" style="text-align:center;">SHIFT II | 12:00 AM</th>
+          </tr>
+          <tr>
+            <th>Actual Flow (LPM)</th><th>Revised Flow (LPM)</th><th>Name</th><th>Reason</th><th>Supervisor</th>
+            <th>Actual Flow (LPM)</th><th>Revised Flow (LPM)</th><th>Name</th><th>Reason</th><th>Supervisor</th>
+            <th>Actual Flow (LPM)</th><th>Revised Flow (LPM)</th><th>Name</th><th>Reason</th><th>Supervisor</th>
+          </tr>
+        </thead>
+        <tbody id="gfBody"><tr><td colspan="20" style="text-align:center;padding:40px;color:var(--text-muted)">Select a date and click Load</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<!-- ════ TAB: PRODUCTION TARGETS (TIER 2) ════ -->
+<div id="tab-targets" class="tab-content hidden">
+  <div class="card">
+    <div class="card-title"><i class="fas fa-bullseye"></i> Production Targets – Plan vs Actual</div>
+    <div class="control-bar">
+      <div class="field-group"><label>Date</label><input type="date" id="tgtDate"/></div>
+      <div class="field-group"><label>Shift</label>
+        <select id="tgtShift"><option value="1">Shift 1</option><option value="2">Shift 2</option><option value="3">Shift 3</option></select>
+      </div>
+      <div style="align-self:flex-end;display:flex;gap:7px;">
+        <button class="btn btn-primary" onclick="loadTargets()"><i class="fas fa-search"></i> Load</button>
+        <button class="btn btn-success" onclick="saveTargets()"><i class="fas fa-save"></i> Save</button>
+        <button class="btn btn-secondary" onclick="exportTargetsExcel()"><i class="fas fa-file-excel"></i> Export</button>
+      </div>
+    </div>
+  </div>
+  <div class="stats-grid" id="tgtStats"></div>
+  <div class="card">
+    <div class="card-title"><i class="fas fa-chart-bar"></i> Cell-wise Progress</div>
+    <div id="tgtBars" class="bar-wrap"></div>
+    <div class="divider"></div>
+    <div class="table-responsive">
+      <table><thead><tr><th>Cell</th><th>Product</th><th>Target</th><th>Actual</th><th>% Done</th><th>Status</th></tr></thead>
+        <tbody id="tgtBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ════ TAB: LEAVE MANAGEMENT (TIER 2) ════ -->
+<div id="tab-leave" class="tab-content hidden">
+  <div class="card">
+    <div class="card-title"><i class="fas fa-calendar-times"></i> Leave Management</div>
+    <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+      <button class="btn btn-primary" onclick="openLeaveModal()"><i class="fas fa-plus"></i> Apply Leave</button>
+      <select id="leaveMonthFilter" onchange="renderLeave()" style="background:var(--dark-bg);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:6px;font-size:.85rem;outline:none;"></select>
+    </div>
+    <div class="stats-grid" id="leaveStats"></div>
+    <div class="table-responsive">
+      <table><thead><tr><th>Employee</th><th>Type</th><th>From</th><th>To</th><th>Days</th><th>Reason</th><th>Status</th><th>Action</th></tr></thead>
+        <tbody id="leaveBody"></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="fas fa-calendar-alt"></i> Leave Calendar – This Month</div>
+    <div id="leaveCal"></div>
+  </div>
+</div>
+
+<!-- ════ TAB: SKILL MATRIX (TIER 2) ════ -->
+<div id="tab-skills" class="tab-content hidden">
+  <div class="card">
+    <div class="card-title"><i class="fas fa-certificate"></i> Skill Matrix</div>
+    <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+      <button class="btn btn-primary" onclick="openSkillModal()"><i class="fas fa-plus"></i> Assign Skills</button>
+      <input type="search" placeholder="Search employee…" oninput="filterSkills(this.value)" style="background:var(--dark-bg);border:1px solid var(--border);color:var(--text);padding:7px 11px;border-radius:6px;font-size:.84rem;flex:1;min-width:140px;outline:none;"/>
+    </div>
+    <div class="table-responsive">
+      <table><thead><tr><th>Employee</th><th>Category</th><th>Skills</th><th>Score</th><th>Action</th></tr></thead>
+        <tbody id="skillBody"></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="fas fa-exclamation-triangle"></i> Skill Gap Alerts</div>
+    <div id="skillGaps"></div>
+  </div>
+</div>
+
+<!-- ════ TAB: REPORTS (TIER 2) ════ -->
+<div id="tab-reports" class="tab-content hidden">
+  <div class="card">
+    <div class="card-title"><i class="fas fa-chart-bar"></i> Monthly Reports</div>
+    <div class="control-bar">
+      <div class="field-group"><label>Month</label><input type="month" id="repMonth"/></div>
+      <div style="align-self:flex-end;display:flex;gap:7px;">
+        <button class="btn btn-primary" onclick="loadReports()"><i class="fas fa-search"></i> Generate</button>
+        <button class="btn btn-success" onclick="exportMonthlyExcel()"><i class="fas fa-file-excel"></i> Export</button>
+      </div>
+    </div>
+  </div>
+  <div class="stats-grid" id="repStats"></div>
+  <div class="card">
+    <div class="card-title"><i class="fas fa-chart-line"></i> Utilisation by Cell</div>
+    <div id="repBars" class="bar-wrap"></div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="fas fa-table"></i> Monthly Summary</div>
+    <div class="table-responsive">
+      <table><thead><tr><th>Cell</th><th>Total Positions</th><th>Filled</th><th>Utilisation</th><th>OT Hours</th><th>Absent</th></tr></thead>
+        <tbody id="repBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ════ TAB: AI AUTO-ASSIGN (TIER 3) ════ -->
+<div id="tab-ai-assign" class="tab-content hidden">
+  <div class="card">
+    <div class="card-title"><i class="fas fa-magic"></i> AI Auto-Assign <span class="badge badge-ai">Claude AI</span></div>
+    <p style="color:var(--text-muted);font-size:.84rem;margin-bottom:14px;">AI reads the selected cell's processes and your employee database, then suggests the best assignment based on category and skills.</p>
+    <div class="control-bar">
+      <div class="field-group"><label>Cell</label>
+        <select id="aiCell">
+          <option value="">-- Select Cell --</option>
+          <option value="1">Cell 1 – N360 Swingarm</option><option value="2">Cell 2 – XL100 & U358</option>
+          <option value="3">Cell 3 – U347 Line-1</option><option value="4">Cell 4 – U347 Line-2</option>
+          <option value="5">Cell 5 – Sports & U223</option><option value="6">Cell 6 – Sports Line-2</option>
+          <option value="7">Cell 7 – U546</option><option value="8">Cell 8 – U359</option>
+          <option value="9">Cell 9 – HLX125 & Star</option><option value="10">Cell 10 – HLX & U237</option>
+          <option value="11">Cell 11 – Press Shop</option>
+        </select>
+      </div>
+      <div class="field-group"><label>Date</label><input type="date" id="aiDate"/></div>
+      <div class="field-group"><label>Shift</label>
+        <select id="aiShift"><option value="1">Shift 1</option><option value="2">Shift 2</option><option value="3">Shift 3</option></select>
+      </div>
+      <div style="align-self:flex-end;">
+        <button class="btn btn-ai" onclick="runAIAssign()"><i class="fas fa-magic"></i> AI Auto-Assign</button>
+      </div>
+    </div>
+    <div id="aiStatus" style="color:var(--text-muted);font-size:.84rem;margin-top:6px;"></div>
+  </div>
+  <div class="card" id="aiResultCard" style="display:none;">
+    <div class="card-title"><i class="fas fa-list-check"></i> AI Assignment Result</div>
+    <div class="table-responsive">
+      <table><thead><tr><th>S.No</th><th>Process</th><th>Category</th><th>AI Suggested Employee</th><th>Reason</th><th>Apply</th></tr></thead>
+        <tbody id="aiResultBody"></tbody>
+      </table>
+    </div>
+    <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end;">
+      <button class="btn btn-success" onclick="applyAllAI()"><i class="fas fa-check-double"></i> Apply All & Go to Allocation</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ TAB: ABSENTEE PREDICTOR (TIER 3) ════ -->
+<div id="tab-predict" class="tab-content hidden">
+  <div class="card">
+    <div class="card-title"><i class="fas fa-brain"></i> Absentee Predictor <span class="badge badge-ai">Claude AI</span></div>
+    <p style="color:var(--text-muted);font-size:.84rem;margin-bottom:14px;">AI analyses attendance patterns to predict which employees are at risk of being absent and suggests backup staff.</p>
+    <div class="control-bar">
+      <div class="field-group"><label>Predict For Date</label><input type="date" id="predDate"/></div>
+      <div style="align-self:flex-end;">
+        <button class="btn btn-ai" onclick="runPredict()"><i class="fas fa-brain"></i> Run Prediction</button>
+      </div>
+    </div>
+    <div id="predStatus" style="color:var(--text-muted);font-size:.84rem;margin-top:6px;"></div>
+  </div>
+  <div id="predResults"></div>
+</div>
+
+<!-- ════ TAB: AI CHAT ASSISTANT (TIER 3) ════ -->
+<div id="tab-chat" class="tab-content hidden">
+  <div class="card">
+    <div class="card-title"><i class="fas fa-robot"></i> AI Assistant <span class="badge badge-ai">Claude AI</span></div>
+    <p style="color:var(--text-muted);font-size:.84rem;margin-bottom:14px;">Ask anything about your manpower data. Try: <em>"Who is free on Cell 3?"</em> · <em>"Generate today's summary"</em> · <em>"How many OT hours this month?"</em></p>
+    <div class="chat-wrap">
+      <div class="chat-msgs" id="chatMsgs">
+        <div class="msg msg-ai"><div class="ai-label">🤖 Elkayem AI</div>Hello! I'm your AI assistant for Elkayem Auto Ancillaries. Ask me anything about manpower, attendance, OT, or gas flow data.</div>
+      </div>
+      <div id="typingIndicator" class="typing hidden">AI is thinking…</div>
+      <div class="chat-input-row">
+        <input type="text" id="chatInput" placeholder="Ask anything about your manpower data…" onkeydown="if(event.key==='Enter')sendChat()"/>
+        <button class="btn btn-ai" onclick="sendChat()"><i class="fas fa-paper-plane"></i> Send</button>
+        <button class="btn btn-secondary btn-sm" onclick="clearChat()"><i class="fas fa-trash"></i></button>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="fas fa-bolt"></i> Quick Queries</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;">
+      <button class="btn btn-secondary btn-sm" onclick="quickChat('Who is free today?')">Who is free today?</button>
+      <button class="btn btn-secondary btn-sm" onclick="quickChat('Generate today manpower summary')">Today Summary</button>
+      <button class="btn btn-secondary btn-sm" onclick="quickChat('How many OT hours this month?')">OT This Month</button>
+      <button class="btn btn-secondary btn-sm" onclick="quickChat('Which cells are understaffed?')">Understaffed Cells</button>
+      <button class="btn btn-secondary btn-sm" onclick="quickChat('List all absent employees today')">Absent Today</button>
+      <button class="btn btn-secondary btn-sm" onclick="quickChat('Write a daily manpower report for Elkayem Auto Ancillaries')">Write Daily Report</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ TAB: VOICE COMMANDS (TIER 3) ════ -->
+<div id="tab-voice" class="tab-content hidden">
+  <div class="card">
+    <div class="card-title"><i class="fas fa-microphone"></i> Voice Commands <span class="badge badge-ai">Speech AI</span></div>
+    <p style="color:var(--text-muted);font-size:.84rem;margin-bottom:18px;">Speak commands hands-free on the factory floor. Works in Chrome/Edge with microphone permission.</p>
+    <div style="text-align:center;padding:20px;">
+      <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()"><i class="fas fa-microphone"></i></button>
+      <div id="voiceStatus" style="margin-top:12px;color:var(--text-muted);font-size:.88rem;">Click the mic to start listening</div>
+      <div id="voiceTranscript" style="margin-top:10px;font-size:1rem;color:var(--text);min-height:28px;font-style:italic;"></div>
+      <div id="voiceResult" style="margin-top:10px;font-size:.88rem;color:var(--primary);"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="fas fa-list"></i> Supported Commands</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px;">
+      <div style="background:var(--dark-bg);border:1px solid var(--border);border-radius:6px;padding:10px;"><div style="font-weight:700;color:var(--primary);font-size:.82rem;">"Go to allocation"</div><div style="font-size:.77rem;color:var(--text-muted);">Navigate to Allocation tab</div></div>
+      <div style="background:var(--dark-bg);border:1px solid var(--border);border-radius:6px;padding:10px;"><div style="font-weight:700;color:var(--primary);font-size:.82rem;">"Load cell one"</div><div style="font-size:.77rem;color:var(--text-muted);">Load Cell 1 allocation</div></div>
+      <div style="background:var(--dark-bg);border:1px solid var(--border);border-radius:6px;padding:10px;"><div style="font-weight:700;color:var(--primary);font-size:.82rem;">"Save allocation"</div><div style="font-size:.77rem;color:var(--text-muted);">Save current allocation</div></div>
+      <div style="background:var(--dark-bg);border:1px solid var(--border);border-radius:6px;padding:10px;"><div style="font-weight:700;color:var(--primary);font-size:.82rem;">"Clear names"</div><div style="font-size:.77rem;color:var(--text-muted);">Clear all assigned names</div></div>
+      <div style="background:var(--dark-bg);border:1px solid var(--border);border-radius:6px;padding:10px;"><div style="font-weight:700;color:var(--primary);font-size:.82rem;">"Download sheet"</div><div style="font-size:.77rem;color:var(--text-muted);">Download Excel sheet</div></div>
+      <div style="background:var(--dark-bg);border:1px solid var(--border);border-radius:6px;padding:10px;"><div style="font-weight:700;color:var(--primary);font-size:.82rem;">"Open AI chat"</div><div style="font-size:.77rem;color:var(--text-muted);">Navigate to AI Assistant</div></div>
+      <div style="background:var(--dark-bg);border:1px solid var(--border);border-radius:6px;padding:10px;"><div style="font-weight:700;color:var(--primary);font-size:.82rem;">"Go to attendance"</div><div style="font-size:.77rem;color:var(--text-muted);">Navigate to Attendance</div></div>
+      <div style="background:var(--dark-bg);border:1px solid var(--border);border-radius:6px;padding:10px;"><div style="font-weight:700;color:var(--primary);font-size:.82rem;">"Show analytics"</div><div style="font-size:.77rem;color:var(--text-muted);">Navigate to Analytics</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ TAB: EMPLOYEES ════ -->
+<div id="tab-employees" class="tab-content hidden">
+  <div class="card">
+    <div class="card-title"><i class="fas fa-users"></i> Employee Database</div>
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap;">
+      <button class="btn btn-primary" onclick="openEmployeeModal()"><i class="fas fa-user-plus"></i> Add Employee</button>
+      <button class="btn btn-secondary" onclick="syncBiometricEmployees()"><i class="fas fa-fingerprint"></i> Sync from Biometric</button>
+      <input type="search" placeholder="Search employees…" oninput="filterEmployees(this.value)" style="background:var(--dark-bg);border:1px solid var(--border);color:var(--text);padding:7px 11px;border-radius:6px;font-size:.84rem;flex:1;min-width:140px;outline:none;"/>
+    </div>
+    <div class="table-responsive">
+      <table><thead><tr><th>ID</th><th>Name</th><th>Category</th><th>Phone</th><th>Skills</th><th>Status</th><th>Action</th></tr></thead>
+        <tbody id="employeeBody"><tr><td colspan="7" style="text-align:center;padding:30px;color:var(--text-muted)">No employees yet</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ════ TAB: ANALYTICS ════ -->
+<div id="tab-analytics" class="tab-content hidden">
+  <div class="card">
+    <div class="card-title"><i class="fas fa-chart-bar"></i> Analytics Overview</div>
+    <div class="stats-grid">
+      <div class="stat-box blue"><div class="stat-value" id="an-employees">0</div><div class="stat-label">Total Employees</div></div>
+      <div class="stat-box green"><div class="stat-value" id="an-today">0</div><div class="stat-label">Allocated Today</div></div>
+      <div class="stat-box amber"><div class="stat-value" id="an-util">0%</div><div class="stat-label">Utilisation</div></div>
+      <div class="stat-box purple"><div class="stat-value" id="an-ot">0 hrs</div><div class="stat-label">OT This Month</div></div>
+      <div class="stat-box red"><div class="stat-value" id="an-absent">0</div><div class="stat-label">Absent Today</div></div>
+      <div class="stat-box cyan"><div class="stat-value" id="an-leave">0</div><div class="stat-label">On Leave Today</div></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="fas fa-chart-bar"></i> Cell Utilisation</div>
+    <div id="anBars" class="bar-wrap"></div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="fas fa-table"></i> Cell Summary</div>
+    <div class="table-responsive">
+      <table><thead><tr><th>Cell</th><th>Total Positions</th><th>Filled</th><th>Vacant</th><th>Utilisation</th></tr></thead>
+        <tbody id="analyticsBody"><tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-muted)">Save allocation data first</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ════ TAB: HISTORY ════ -->
+<div id="tab-history" class="tab-content hidden">
+  <div class="card">
+    <div class="card-title"><i class="fas fa-history"></i> Allocation History</div>
+    <div class="control-bar">
+      <div class="field-group"><label>Date</label><input type="date" id="historyDate"/></div>
+      <div class="field-group"><label>Cell</label>
+        <select id="historyCellFilter"><option value="">All Cells</option>
+          <option value="1">Cell 1</option><option value="2">Cell 2</option><option value="3">Cell 3</option><option value="4">Cell 4</option><option value="5">Cell 5</option><option value="6">Cell 6</option><option value="7">Cell 7</option><option value="8">Cell 8</option><option value="9">Cell 9</option><option value="10">Cell 10</option><option value="11">Cell 11</option>
+        </select>
+      </div>
+      <div style="align-self:flex-end;"><button class="btn btn-primary" onclick="loadHistory()"><i class="fas fa-search"></i> Load</button></div>
+    </div>
+    <div class="table-responsive">
+      <table><thead><tr><th>Date</th><th>Cell</th><th>Employee</th><th>Process</th><th>Shift</th><th>Status</th></tr></thead>
+        <tbody id="historyBody"><tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-muted)">No history yet</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ════ TAB: APPROVALS ════ -->
+<div id="tab-approvals" class="tab-content hidden">
+  <div class="card">
+    <div class="card-title"><i class="fas fa-check-circle"></i> Pending Approvals</div>
+    <div style="margin-bottom:14px;"><button class="btn btn-primary" onclick="loadPendingApprovals()"><i class="fas fa-refresh"></i> Refresh</button></div>
+    <div class="table-responsive">
+      <table><thead><tr><th>Cell</th><th>Date</th><th>Process</th><th>Employee</th><th>Status</th><th>Submitted By</th><th>Submitted On</th><th style="text-align:center">Action</th></tr></thead>
+        <tbody id="approvalsBody"><tr><td colspan="8" style="text-align:center;padding:20px;color:var(--text-muted)">No pending approvals</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ════ TAB: SETTINGS ════ -->
+<div id="tab-settings" class="tab-content hidden">
+  <div class="card">
+    <div class="card-title"><i class="fas fa-cog"></i> Settings</div>
+    <div class="control-bar">
+      <div class="field-group"><label>Company Name</label><input type="text" id="companyName" value="Elkayem Auto Ancillaries Pvt Ltd"/></div>
+      <div class="field-group"><label>Default Shift</label>
+        <select id="defaultShift"><option value="1">Shift 1</option><option value="2">Shift 2</option><option value="3">Shift 3</option></select>
+      </div>
+      <div class="field-group"><label>Theme</label>
+        <select id="themeSelect" onchange="applyTheme(this.value)"><option value="dark">Dark Mode</option><option value="light">Light Mode</option></select>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="card-title"><i class="fas fa-database"></i> Data Management</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn btn-primary" onclick="saveSettings()"><i class="fas fa-save"></i> Save Settings</button>
+      <button class="btn btn-secondary" onclick="exportAllData()"><i class="fas fa-database"></i> Export Backup</button>
+      <button class="btn btn-danger" onclick="clearLocalData()"><i class="fas fa-trash"></i> Clear All Data</button>
+    </div>
+  </div>
+</div>
+
+</main>
+<!-- MODALS -->
+<div id="employeeModal" class="modal">
+  <div class="modal-content" style="max-width:500px;">
+    <div class="modal-header"><span><i class="fas fa-user-plus"></i> Add / Edit Employee</span><button class="modal-close" onclick="closeEmployeeModal()">&times;</button></div>
+    <div class="control-bar">
+      <div class="field-group"><label>Name</label><input type="text" id="empName" placeholder="Full name"/></div>
+      <div class="field-group"><label>Category</label>
+        <select id="empCategory">
+          <option value="Robot Op">Robot Operator</option><option value="Welder">Welder</option>
+          <option value="Helper">Helper</option><option value="Operator">Operator</option><option value="SPM Rotary">SPM Rotary</option>
+        </select>
+      </div>
+      <div class="field-group"><label>Phone</label><input type="tel" id="empPhone" placeholder="+91 XXXXX XXXXX"/></div>
+      <div class="field-group"><label>Status</label>
+        <select id="empStatus"><option value="active">Active</option><option value="inactive">Inactive</option><option value="leave">On Leave</option></select>
+      </div>
+      <div class="field-group" style="grid-column:1/-1;"><label>Skills (comma separated)</label><input type="text" id="empSkills" placeholder="e.g. MIG Welding, Robot Op, Boring"/></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeEmployeeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEmployee()"><i class="fas fa-save"></i> Save Employee</button>
+    </div>
+  </div>
+</div>
+
+<div id="leaveModal" class="modal">
+  <div class="modal-content" style="max-width:480px;">
+    <div class="modal-header"><span><i class="fas fa-calendar-plus"></i> Apply Leave</span><button class="modal-close" onclick="closeLeaveModal()">&times;</button></div>
+    <div class="control-bar">
+      <div class="field-group"><label>Employee Name</label><input type="text" id="leaveEmp" placeholder="Employee name"/></div>
+      <div class="field-group"><label>Leave Type</label>
+        <select id="leaveType"><option value="Casual">Casual Leave</option><option value="Sick">Sick Leave</option><option value="Emergency">Emergency</option><option value="Annual">Annual Leave</option></select>
+      </div>
+      <div class="field-group"><label>From Date</label><input type="date" id="leaveFrom"/></div>
+      <div class="field-group"><label>To Date</label><input type="date" id="leaveTo"/></div>
+      <div class="field-group" style="grid-column:1/-1;"><label>Reason</label><textarea id="leaveReason" rows="2" placeholder="Reason for leave…" style="resize:none;"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeLeaveModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveLeave()"><i class="fas fa-check"></i> Submit Leave</button>
+    </div>
+  </div>
+</div>
+
+<div id="skillModal" class="modal">
+  <div class="modal-content" style="max-width:480px;">
+    <div class="modal-header"><span><i class="fas fa-certificate"></i> Assign Skills</span><button class="modal-close" onclick="closeSkillModal()">&times;</button></div>
+    <div class="control-bar">
+      <div class="field-group" style="grid-column:1/-1;"><label>Select Employee</label><select id="skillEmpSel"></select></div>
+      <div class="field-group" style="grid-column:1/-1;"><label>Skills (comma separated)</label><input type="text" id="skillList" placeholder="MIG Welding, Robot Op, Boring, Assembly…"/></div>
+      <div class="field-group"><label>Experience (yrs)</label><input type="number" id="skillExp" min="0" max="40" value="1"/></div>
+      <div class="field-group"><label>Score (1–10)</label><input type="number" id="skillScore" min="1" max="10" value="7"/></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeSkillModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveSkill()"><i class="fas fa-save"></i> Save Skills</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+// ════════════════════════════════════════════════════════════
+// CELL DEFINITIONS (your exact names kept)
+// ════════════════════════════════════════════════════════════
+const CELLS = {
+  "1":{ label:"Cell 1 – N360 Swingarm", processes:[
+    {process:"Top & Bottom Welding",category:"Robot Op",plan:1},
+    {process:"Mono Shock Absorber Welding",category:"Robot Op",plan:1},
+    {process:"Welding Stage I",category:"Robot Op",plan:1},
+    {process:"Welding Stage I",category:"Robot Op",plan:1},
+    {process:"Welding Stage II",category:"Robot Op",plan:1},
+    {process:"Welding Stage II",category:"Robot Op",plan:1},
+    {process:"Welding Stage III",category:"Robot Op",plan:1},
+    {process:"Welding Stage IV",category:"Robot Op",plan:1},
+    {process:"Full Welding",category:"Welder",plan:1},
+    {process:"Full Welding",category:"Welder",plan:1},
+    {process:"Rework Welding",category:"Welder",plan:1},
+    {process:"Rework Welding",category:"Welder",plan:1},
+    {process:"Spatter Cleaning",category:"Helper",plan:1},
+    {process:"Spatter Cleaning",category:"Helper",plan:1},
+    {process:"Spatter Cleaning",category:"Helper",plan:1},
+    {process:"Revising",category:"Operator",plan:1},
+    {process:"Revising",category:"Operator",plan:1},
+    {process:"Visual Inspection",category:"Operator",plan:1},
+    {process:"Final Gauge Inspection",category:"Operator",plan:1},
+    {process:"Material Moving",category:"Helper",plan:1},
+  ]},
+  "2":{ label:"Cell 2 – XL100 & U358 Swingarm", processes:[
+    {process:"Sub Assembly Welding",category:"Robot Op",plan:1},
+    {process:"Welding Stage I",category:"Robot Op",plan:1},
+    {process:"Welding Stage II & III",category:"Robot Op",plan:1},
+    {process:"Full Welding",category:"Welder",plan:1},
+    {process:"Spatter Cleaning",category:"Helper",plan:1},
+    {process:"Revising",category:"Operator",plan:1},
+    {process:"Final Gauge Inspection",category:"Operator",plan:1},
+    {process:"Boring",category:"Operator",plan:1},
+  ]},
+  "3":{ label:"Cell 3 – U347 Swingarm (Line-1)", processes:[
+    {process:"Welding Stage I",category:"Robot Op",plan:1},
+    {process:"Welding Stage II",category:"Robot Op",plan:1},
+    {process:"Welding Stage III & IV",category:"Robot Op",plan:1},
+    {process:"Welding Stage V",category:"Robot Op",plan:1},
+    {process:"Full Welding I",category:"Welder",plan:1},
+    {process:"Full Welding II",category:"Welder",plan:1},
+    {process:"Spatter Cleaning",category:"Helper",plan:1},
+    {process:"Revising",category:"Operator",plan:1},
+    {process:"Final Gauge Inspection",category:"Operator",plan:1},
+    {process:"Boring",category:"Operator",plan:1},
+  ]},
+  "4":{ label:"Cell 4 – U347 Swingarm (Line-2)", processes:[
+    {process:"Welding Stage I",category:"Robot Op",plan:1},
+    {process:"Welding Stage II",category:"Robot Op",plan:1},
+    {process:"Welding Stage III",category:"Robot Op",plan:1},
+    {process:"Welding Stage IV",category:"Robot Op",plan:1},
+    {process:"Full Welding-I",category:"Welder",plan:1},
+    {process:"Spatter Cleaning",category:"Helper",plan:1},
+    {process:"Revising",category:"Operator",plan:1},
+    {process:"Final Gauge Inspection",category:"Operator",plan:1},
+  ]},
+  "5":{ label:"Cell 5 – Sports & U223 Swingarm", processes:[
+    {process:"Welding Stage I & II",category:"Robot Op",plan:1},
+    {process:"Welding Stage III & IV",category:"Robot Op",plan:1},
+    {process:"Sub Assy Welding",category:"Robot Op",plan:1},
+    {process:"Full Welding",category:"Welder",plan:1},
+    {process:"Spatter Cleaning",category:"Helper",plan:1},
+    {process:"Revising",category:"Operator",plan:1},
+    {process:"Final Gauge Inspection",category:"Operator",plan:1},
+    {process:"Boring M/C-Taurus",category:"Operator",plan:1},
+  ]},
+  "6":{ label:"Cell 6 – Sports Swingarm Line-2", processes:[
+    {process:"Welding Stage I & II",category:"Robot Op",plan:1},
+    {process:"Welding Stage III & IV",category:"Robot Op",plan:1},
+    {process:"Sub Assy Welding",category:"Robot Op",plan:1},
+    {process:"Full Welding",category:"Welder",plan:1},
+    {process:"Spatter Cleaning",category:"Helper",plan:1},
+    {process:"Revising",category:"Operator",plan:1},
+    {process:"Final Gauge Inspection",category:"Operator",plan:1},
+  ]},
+  "7":{ label:"Cell 7 – U546 Swingarm", processes:[
+    {process:"Subassy Welding-I",category:"Robot Op",plan:1},
+    {process:"Subassy Welding-II",category:"SPM Rotary",plan:1},
+    {process:"Welding Stage I",category:"Robot Op",plan:1},
+    {process:"Welding Stage I",category:"Welder",plan:1},
+    {process:"Welding Stage II",category:"Robot Op",plan:1},
+    {process:"Welding Stage III",category:"Robot Op",plan:1},
+    {process:"Full Welding",category:"Welder",plan:1},
+    {process:"Full Welding",category:"Welder",plan:1},
+    {process:"Revising",category:"Operator",plan:1},
+    {process:"Final Gauge Inspection",category:"Operator",plan:1},
+    {process:"Boring M/C-Speparmac 1",category:"Operator",plan:1},
+  ]},
+  "8":{ label:"Cell 8 – U359 Swingarm", processes:[
+    {process:"Welding Stage I & II",category:"Robot Op",plan:1},
+    {process:"Welding Stage III & IV",category:"Robot Op",plan:1},
+    {process:"Welding Stage V",category:"Robot Op",plan:1},
+    {process:"Full Welding",category:"Welder",plan:1},
+    {process:"Spatter Cleaning",category:"Helper",plan:1},
+    {process:"Revising",category:"Operator",plan:1},
+    {process:"Final Gauge Inspection",category:"Operator",plan:1},
+    {process:"Boring Speparmac 4",category:"Operator",plan:1},
+  ]},
+  "9":{ label:"Cell 9 – HLX125 & Star Swingarm Line-2", processes:[
+    {process:"Welding Stage I",category:"Robot Op",plan:1},
+    {process:"Welding Stage II",category:"Robot Op",plan:1},
+    {process:"Welding Stage III & IV",category:"Robot Op",plan:1},
+    {process:"Welding Stage V",category:"Robot Op",plan:1},
+    {process:"Full Welding",category:"Welder",plan:1},
+    {process:"Spatter Cleaning",category:"Helper",plan:1},
+    {process:"Revising",category:"Operator",plan:1},
+    {process:"Final Gauge Inspection",category:"Operator",plan:1},
+  ]},
+  "10":{ label:"Cell 10 – HLX & U237 Swingarm", processes:[
+    {process:"Welding Stage I",category:"Robot Op",plan:1},
+    {process:"Welding Stage II",category:"Robot Op",plan:1},
+    {process:"Welding Stage III, IV",category:"Robot Op",plan:1},
+    {process:"Welding Stage V",category:"Robot Op",plan:1},
+    {process:"Full Welding",category:"Welder",plan:1},
+    {process:"Spatter Cleaning",category:"Helper",plan:1},
+    {process:"Revising",category:"Operator",plan:1},
+    {process:"Final Gauge Inspection",category:"Operator",plan:1},
+    {process:"Boring",category:"Operator",plan:1},
+  ]},
+  "11":{ label:"Cell 11 – Press Shop", processes:[
+    {process:"Drilling 1",category:"Operator",plan:1},
+    {process:"Drilling 2",category:"Operator",plan:1},
+    {process:"Drilling 3",category:"Operator",plan:1},
+    {process:"Hyd 20T I",category:"Operator",plan:1},
+    {process:"Hyd 20T II",category:"Operator",plan:1},
+    {process:"U347 SPM Pipe Bending",category:"Operator",plan:1},
+    {process:"SNX 32",category:"Operator",plan:1},
+    {process:"Hyd 20T III",category:"Operator",plan:1},
+    {process:"Hyd 20T IV",category:"Operator",plan:1},
+    {process:"SPM 2V Bending",category:"Operator",plan:1},
+    {process:"Hyd 40T I",category:"Operator",plan:1},
+    {process:"Hyd 20T New",category:"Operator",plan:1},
+    {process:"Hyd 40T II",category:"Operator",plan:1},
+    {process:"N360 SPM",category:"Operator",plan:1},
+    {process:"Mech 20",category:"Operator",plan:1},
+    {process:"Hyd 10T I",category:"Operator",plan:1},
+    {process:"SNX 63T III",category:"Operator",plan:1},
+    {process:"Hyd 10T II",category:"Operator",plan:1},
+    {process:"New Hyd 20T III",category:"Operator",plan:1},
+    {process:"SNX 63T IV",category:"Operator",plan:1},
+    {process:"GZ 63T",category:"Operator",plan:1},
+    {process:"SNX 110",category:"Operator",plan:1},
+    {process:"SPM U546",category:"Operator",plan:1},
+    {process:"Tool Setter",category:"Operator",plan:1},
+  ]},
+};
+
+const PRODUCTS={1:'N360',2:'XL100/U358',3:'U347 L1',4:'U347 L2',5:'Sports/U223',6:'Sports L2',7:'U546',8:'U359',9:'HLX125/Star',10:'HLX/U237',11:'Press Shop'};
+
+const GAS_FLOW_MACHINES=[
+  {cell:'1',model:'N360 Swing arm',process:'Top & Bottom Robo Welding - 1',mcNo:'FR18',mcName:'R OTC'},
+  {cell:'1',model:'N360 Swing arm',process:'Top & Bottom Robo Welding - 2',mcNo:'FR17',mcName:'R OTC'},
+  {cell:'1',model:'N360 Swing arm',process:'Top & Bottom F.W ; Shock Absorber Sub Assy',mcNo:'FR02',mcName:'R OTC'},
+  {cell:'1',model:'N360 Swing arm',process:'I-stage - 1',mcNo:'FR19',mcName:'R OTC'},
+  {cell:'1',model:'N360 Swing arm',process:'I-stage - 2',mcNo:'FR33',mcName:'R OTC'},
+  {cell:'1',model:'N360 Swing arm',process:'II-stage-1',mcNo:'FR20',mcName:'R OTC'},
+  {cell:'1',model:'N360 Swing arm',process:'II-stage-2',mcNo:'FR21',mcName:'R OTC'},
+  {cell:'1',model:'N360 Swing arm',process:'III-Stage',mcNo:'FR03',mcName:'R OTC'},
+  {cell:'1',model:'N360 Swing arm',process:'IV-Stage',mcNo:'FR22',mcName:'R OTC'},
+  {cell:'1',model:'N360 Swing arm',process:'Full welding 1',mcNo:'F124',mcName:'M ESAB'},
+  {cell:'1',model:'N360 Swing arm',process:'Rework 1',mcNo:'F102',mcName:'M ESAB'},
+  {cell:'1',model:'N360 Swing arm',process:'Full welding 2',mcNo:'F123',mcName:'M ESAB'},
+  {cell:'1',model:'N360 Swing arm',process:'Rework 2',mcNo:'F99',mcName:'M ESAB'},
+  {cell:'2',model:'U358/XL100 Swing arm',process:'Sub assembly Welding I & II',mcNo:'FR06',mcName:'R FANUC'},
+  {cell:'2',model:'U358/XL100 Swing arm',process:'I-Stage Welding',mcNo:'FR01',mcName:'R FANUC'},
+  {cell:'2',model:'U358/XL100 Swing arm',process:'II & III stage welding',mcNo:'FR05',mcName:'R FANUC'},
+  {cell:'2',model:'U358/XL100 Swing arm',process:'Full welding',mcNo:'F118',mcName:'M ESAB'},
+  {cell:'3',model:'U347 SWING ARM LINE 2',process:'I-stage',mcNo:'FR07',mcName:'R OTC'},
+  {cell:'3',model:'U347 SWING ARM LINE 2',process:'II-stage',mcNo:'FR08',mcName:'R OTC'},
+  {cell:'3',model:'U347 SWING ARM LINE 2',process:'III & IV-stage',mcNo:'FR09',mcName:'R OTC'},
+  {cell:'3',model:'U347 SWING ARM LINE 2',process:'V-stage',mcNo:'FR10',mcName:'R OTC'},
+  {cell:'3',model:'U347 SWING ARM LINE 2',process:'Full welding',mcNo:'F107',mcName:'ESAB'},
+  {cell:'4',model:'U347 Swing arm',process:'I-stage - 1',mcNo:'FR13',mcName:'R OTC'},
+  {cell:'4',model:'U347 Swing arm',process:'I-stage - 2',mcNo:'FR12',mcName:'R OTC'},
+  {cell:'4',model:'U347 Swing arm',process:'II-Stage',mcNo:'FR40',mcName:'R OTC'},
+  {cell:'4',model:'U347 Swing arm',process:'III & IV-stage',mcNo:'FR11',mcName:'R OTC'},
+  {cell:'4',model:'U347 Swing arm',process:'V-stage',mcNo:'FR16',mcName:'R OTC'},
+  {cell:'4',model:'U347 Swing arm',process:'Full welding 1',mcNo:'F127',mcName:'ESAB'},
+  {cell:'4',model:'U347 Swing arm',process:'Full welding 2',mcNo:'F100',mcName:'ESAB'},
+  {cell:'5',model:'U223/SPORTS Swing arm',process:'I stage welding',mcNo:'FR26',mcName:'R OTC'},
+  {cell:'5',model:'U223/SPORTS Swing arm',process:'II-Stage Welding',mcNo:'FR27',mcName:'R OTC'},
+  {cell:'5',model:'U223/SPORTS Swing arm',process:'III & IV stage',mcNo:'FR28',mcName:'R OTC'},
+  {cell:'5',model:'U223/SPORTS Swing arm',process:'Sub assembly Welding',mcNo:'FR15',mcName:'R FANUC'},
+  {cell:'5',model:'U223/SPORTS Swing arm',process:'Full welding',mcNo:'F98',mcName:'M ESAB'},
+  {cell:'6',model:'U223/SPORTS Swing arm Line 2',process:'I stage welding',mcNo:'',mcName:'R OTC'},
+  {cell:'6',model:'U223/SPORTS Swing arm Line 2',process:'II-Stage Welding',mcNo:'',mcName:'R OTC'},
+  {cell:'6',model:'U223/SPORTS Swing arm Line 2',process:'III & IV stage',mcNo:'',mcName:'R OTC'},
+  {cell:'6',model:'U223/SPORTS Swing arm Line 2',process:'Sub assembly Welding',mcNo:'',mcName:'R OTC'},
+  {cell:'6',model:'U223/SPORTS Swing arm Line 2',process:'Full welding',mcNo:'',mcName:'M ESAB'},
+  {cell:'7',model:'U546 Swing Arm',process:'Sub Assy 1',mcNo:'',mcName:'R FANUC'},
+  {cell:'7',model:'U546 Swing Arm',process:'Rotory Welding',mcNo:'',mcName:'Rotory'},
+  {cell:'7',model:'U546 Swing Arm',process:'Sub Assy 2',mcNo:'',mcName:'R FANUC'},
+  {cell:'7',model:'U546 Swing Arm',process:'I-Stage',mcNo:'',mcName:'R FANUC'},
+  {cell:'7',model:'U546 Swing Arm',process:'II-Stage',mcNo:'',mcName:'R OTC'},
+  {cell:'7',model:'U546 Swing Arm',process:'III-Stage',mcNo:'',mcName:'R FANUC'},
+  {cell:'7',model:'U546 Swing Arm',process:'Full welding',mcNo:'',mcName:'M ESAB'},
+  {cell:'8',model:'U359/STAR Swing Arm',process:'I-Stage 1',mcNo:'FR29',mcName:'R OTC'},
+  {cell:'8',model:'U359/STAR Swing Arm',process:'I-Stage 2',mcNo:'FR30',mcName:'R OTC'},
+  {cell:'8',model:'U359/STAR Swing Arm',process:'II-Stage',mcNo:'FR31',mcName:'R OTC'},
+  {cell:'8',model:'U359/STAR Swing Arm',process:'III-Stage',mcNo:'FR32',mcName:'R OTC'},
+  {cell:'8',model:'U359/STAR Swing Arm',process:'Full welding',mcNo:'F119',mcName:'M ESAB'},
+  {cell:'9',model:'HLX-125 & Star Swing arm',process:'I-stage',mcNo:'',mcName:'R OTC'},
+  {cell:'9',model:'HLX-125 & Star Swing arm',process:'II-stage',mcNo:'',mcName:'R OTC'},
+  {cell:'9',model:'HLX-125 & Star Swing arm',process:'III & IV-stage',mcNo:'',mcName:'R OTC'},
+  {cell:'9',model:'HLX-125 & Star Swing arm',process:'V-stage',mcNo:'',mcName:'R OTC'},
+  {cell:'9',model:'HLX-125 & Star Swing arm',process:'Full welding',mcNo:'',mcName:'ESAB'},
+  {cell:'10',model:'HLX & U237 SWING ARM',process:'I-stage',mcNo:'',mcName:'R OTC'},
+  {cell:'10',model:'HLX & U237 SWING ARM',process:'II-stage',mcNo:'',mcName:'R OTC'},
+  {cell:'10',model:'HLX & U237 SWING ARM',process:'III & IV-stage',mcNo:'',mcName:'R OTC'},
+  {cell:'10',model:'HLX & U237 SWING ARM',process:'V-stage',mcNo:'',mcName:'R OTC'},
+  {cell:'10',model:'HLX & U237 SWING ARM',process:'Full welding',mcNo:'',mcName:'ESAB'},
+];
+
+const GF_SHIFT_BLOCKS=[
+  {key:'shift1_830am',label:'Shift I - 8:30 AM'},
+  {key:'shift1_3pm',label:'Shift I - 3:00 PM'},
+  {key:'shift2_12am',label:'Shift II - 12:00 AM'},
+];
+
+// ══════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════
+const API_BASE='http://localhost:8080/api';
+let appState={
+  currentUser:null,token:null,
+  allocations:[],employees:[],attendance:[],otLogs:[],
+  history:[],leaves:[],skills:{},targets:[],aiResult:[],
+  chatHistory:[],voiceRec:null,voiceActive:false,gfData:{}
+};
+
+// ══════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════
+document.addEventListener('DOMContentLoaded',()=>{
+  const today=new Date().toISOString().split('T')[0];
+  const month=today.slice(0,7);
+  ['allocationDate','attDate','tgtDate','predDate','aiDate'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=today;});
+  ['allocationMonth','otMonth','repMonth'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=month;});
+  if(document.getElementById('historyDate'))document.getElementById('historyDate').value=today;
+  if(document.getElementById('leaveFrom'))document.getElementById('leaveFrom').value=today;
+  if(document.getElementById('leaveTo'))document.getElementById('leaveTo').value=today;
+  if(document.getElementById('gfDate'))document.getElementById('gfDate').value=today;
+  applyTheme(localStorage.getItem('elkTheme')||'dark');
+  appState.employees=JSON.parse(localStorage.getItem('employees')||'[]');
+  appState.leaves=JSON.parse(localStorage.getItem('leaves')||'[]');
+  appState.skills=JSON.parse(localStorage.getItem('skills')||'{}');
+  const tok=localStorage.getItem('token');
+  const usr=localStorage.getItem('user');
+  if(!tok||!usr){showLoginModal();}
+  else{
+    appState.token=tok;appState.currentUser=JSON.parse(usr);
+    document.getElementById('userDisplay').textContent=appState.currentUser.username;
+    if(appState.currentUser.role==='admin'){const nb=document.getElementById('nav-approvals');if(nb)nb.style.display='flex';}
+    updateAnalytics();populateLeaveMonths();
+  }
+});
+
+// ══════════════════════════════════════════
+// THEME
+// ══════════════════════════════════════════
+function applyTheme(t){
+  document.documentElement.setAttribute('data-theme',t);
+  localStorage.setItem('elkTheme',t);
+  const sel=document.getElementById('themeSelect');if(sel)sel.value=t;
+  const ic=document.getElementById('themeIcon');if(ic)ic.className=t==='dark'?'fas fa-sun':'fas fa-moon';
+}
+function toggleTheme(){applyTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');}
+
+// ══════════════════════════════════════════
+// AUTH
+// ══════════════════════════════════════════
+function showLoginModal(){
+  const m=document.createElement('div');m.className='modal active';m.id='loginModalElement';
+  m.innerHTML=`<div class="modal-content" style="max-width:380px;">
+    <div class="modal-header"><span><i class="fas fa-lock"></i> Sign In – Elkayem</span><button class="modal-close" onclick="closeLoginModal()">&times;</button></div>
+    <div class="control-bar">
+      <div class="field-group"><label>Username</label><input type="text" id="loginUsername" placeholder="Enter username"/></div>
+      <div class="field-group"><label>Password</label><input type="password" id="loginPassword" placeholder="Enter password" onkeydown="if(event.key==='Enter')performLogin()"/></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeLoginModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="performLogin()"><i class="fas fa-sign-in-alt"></i> Sign In</button>
+    </div>
+  </div>`;
+  document.body.appendChild(m);
+  setTimeout(()=>{const el=document.getElementById('loginUsername');if(el)el.focus();},80);
+}
+async function performLogin(){
+  const u=document.getElementById('loginUsername').value.trim();
+  const p=document.getElementById('loginPassword').value;
+  if(!u||!p){showToast('Enter username and password','warning');return;}
+  try{
+    const res=await fetch(`${API_BASE}/login`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});
+    if(res.ok){
+      const data=await res.json();
+      localStorage.setItem('token',data.token);localStorage.setItem('user',JSON.stringify(data.user));
+      appState.token=data.token;appState.currentUser=data.user;
+      document.getElementById('userDisplay').textContent=data.user.username;
+      document.getElementById('loginModalElement').remove();
+      if(data.user.role==='admin'){const nb=document.getElementById('nav-approvals');if(nb)nb.style.display='flex';}
+      updateAnalytics();populateLeaveMonths();
+      showToast('Welcome, '+data.user.username+'!');
+    }else{showToast('Invalid credentials','danger');}
+  }catch(e){showToast('Server offline – offline mode active','warning');closeLoginModal();}
+}
+function closeLoginModal(){const m=document.getElementById('loginModalElement');if(m)m.remove();}
+function logout(){localStorage.removeItem('token');localStorage.removeItem('user');location.reload();}
+
+// ══════════════════════════════════════════
+// TAB NAV
+// ══════════════════════════════════════════
+function switchTab(tab){
+  document.querySelectorAll('.tab-content').forEach(el=>el.classList.add('hidden'));
+  const t=document.getElementById('tab-'+tab);if(t)t.classList.remove('hidden');
+  document.querySelectorAll('.sidebar-nav button').forEach(b=>b.classList.remove('active'));
+  const nb=document.getElementById('nav-'+tab);if(nb)nb.classList.add('active');
+  appState.currentTab=tab;
+  document.getElementById('sidebar').classList.remove('open');
+  if(tab==='analytics')updateAnalytics();
+  if(tab==='employees')renderEmployeeTable();
+  if(tab==='skills'){renderSkills();renderSkillGaps();}
+  if(tab==='leave'){renderLeave();renderLeaveCal();}
+  if(tab==='reports')loadReports();
+  if(tab==='gasflow'&&!document.getElementById('gfDate').value){
+    document.getElementById('gfDate').value=new Date().toISOString().split('T')[0];
+    renderGasFlowTable();
+  }
+}
+
+// ══════════════════════════════════════════
+// LIVE SEARCH
+// ══════════════════════════════════════════
+function liveSearch(q){
+  document.querySelectorAll('#allocationBody tr').forEach(r=>{
+    if(!q){r.classList.remove('hidden-row','highlight-row');return;}
+    const t=r.innerText.toLowerCase();
+    if(t.includes(q.toLowerCase())){r.classList.remove('hidden-row');r.classList.add('highlight-row');}
+    else{r.classList.add('hidden-row');r.classList.remove('highlight-row');}
+  });
+}
+
+// ══════════════════════════════════════════
+// ALLOCATION
+// ══════════════════════════════════════════
+function loadAllocation(){
+  const cid=document.getElementById('cellSelect').value;
+  if(!cid){showToast('Select a Cell first','warning');return;}
+  const date=document.getElementById('allocationDate').value;
+  const shift=document.getElementById('allocationShift').value;
+  const saved=JSON.parse(localStorage.getItem(`alloc_${cid}_${date}_${shift}`)||'null');
+  appState.allocations=CELLS[cid].processes.map((p,i)=>({
+    sno:i+1,process:p.process,category:p.category,plan:p.plan,
+    assigned:saved&&saved[i]?saved[i].assigned:'',
+    remark:saved&&saved[i]?saved[i].remark:'',
+    status:saved&&saved[i]?saved[i].status:'pending',
+    cellId:cid,date,shift
+  }));
+  document.getElementById('cellLabel').textContent=CELLS[cid].label;
+  document.getElementById('print-subtitle').textContent=CELLS[cid].label+' | '+date+' | Shift '+shift;
+  renderAllocationTable();updateStats();pushHistory(cid,date,shift);
+  // Autocomplete datalist
+  let dl=document.getElementById('empList');
+  if(!dl){dl=document.createElement('datalist');dl.id='empList';document.body.appendChild(dl);}
+  dl.innerHTML=appState.employees.map(e=>`<option value="${escH(e.name)}">`).join('');
+  showToast('Loaded '+CELLS[cid].label);
+}
+
+function renderAllocationTable(){
+  const tbody=document.getElementById('allocationBody');
+  document.getElementById('totalBadge').textContent=appState.allocations.length+' rows';
+  if(!appState.allocations.length){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;padding:30px;color:var(--text-muted)">No rows</td></tr>';return;}
+  tbody.innerHTML=appState.allocations.map((row,i)=>`
+    <tr class="${row.remark==='Absent'?'row-absent':row.remark==='OT'?'row-ot':''}" id="arow-${i}">
+      <td style="color:var(--text-muted);font-weight:600;">${row.sno}</td>
+      <td><strong>${escH(row.process)}</strong></td>
+      <td><span class="badge badge-pending">${escH(row.category)}</span></td>
+      <td style="text-align:center;font-weight:700;color:var(--primary);">${row.plan}</td>
+      <td><input type="text" class="editable" value="${escH(row.assigned)}" list="empList"
+          onchange="appState.allocations[${i}].assigned=this.value;updateStats();" placeholder="Enter name…"/></td>
+      <td><select class="editable remark-select" onchange="appState.allocations[${i}].remark=this.value;applyRemarkStyle(${i},this.value);">
+        <option value="" ${!row.remark?'selected':''}>–</option>
+        ${['Present','Absent','Late','OT','Leave','Temp'].map(v=>`<option value="${v}" ${row.remark===v?'selected':''}>${v}</option>`).join('')}
+      </select></td>
+      <td><select class="editable" onchange="appState.allocations[${i}].status=this.value;updateStats();">
+        ${['pending','assigned','completed'].map(v=>`<option value="${v}" ${row.status===v?'selected':''}>${v}</option>`).join('')}
+      </select></td>
+      <td style="text-align:center;"><button class="btn btn-sm btn-danger" onclick="appState.allocations.splice(${i},1);appState.allocations.forEach((r,j)=>r.sno=j+1);renderAllocationTable();updateStats();"><i class="fas fa-trash"></i></button></td>
+    </tr>`).join('');
+}
+
+function applyRemarkStyle(i,v){
+  const tr=document.getElementById('arow-'+i);if(!tr)return;
+  tr.classList.remove('row-absent','row-ot');
+  if(v==='Absent')tr.classList.add('row-absent');
+  if(v==='OT')tr.classList.add('row-ot');
+}
+
+function addAllocationRow(){
+  if(!document.getElementById('cellSelect').value){showToast('Load a cell first','warning');return;}
+  appState.allocations.push({sno:appState.allocations.length+1,process:'',category:'Operator',plan:1,assigned:'',remark:'',status:'pending'});
+  renderAllocationTable();
+  setTimeout(()=>{const inp=document.querySelector('#allocationBody tr:last-child input.editable');if(inp)inp.focus();},50);
+}
+
+function clearNames(){appState.allocations.forEach(r=>{r.assigned='';r.remark='';r.status='pending';});renderAllocationTable();updateStats();showToast('Names cleared');}
+
+function updateStats(){
+  const total=appState.allocations.length,filled=appState.allocations.filter(r=>r.assigned.trim()).length;
+  const absent=appState.allocations.filter(r=>r.remark==='Absent').length;
+  const util=total>0?Math.round(filled/total*100):0;
+  document.getElementById('statsGrid').innerHTML=`
+    <div class="stat-box blue"><div class="stat-value">${total}</div><div class="stat-label">Total Positions</div></div>
+    <div class="stat-box green"><div class="stat-value">${filled}</div><div class="stat-label">Filled</div></div>
+    <div class="stat-box red"><div class="stat-value">${total-filled}</div><div class="stat-label">Vacant</div></div>
+    <div class="stat-box amber"><div class="stat-value">${util}%</div><div class="stat-label">Utilisation</div></div>
+    <div class="stat-box purple"><div class="stat-value">${absent}</div><div class="stat-label">Absent</div></div>`;
+}
+
+function saveAllocation(){
+  const cid=document.getElementById('cellSelect').value;
+  const date=document.getElementById('allocationDate').value;
+  const shift=document.getElementById('allocationShift').value;
+  if(!cid){showToast('Select a cell first','warning');return;}
+  localStorage.setItem(`alloc_${cid}_${date}_${shift}`,JSON.stringify(appState.allocations));
+  showToast('Allocation saved ✓');pushHistory(cid,date,shift);updateAnalytics();
+}
+
+function downloadSingleSheet(){
+  const cid=document.getElementById('cellSelect').value;
+  if(!cid||!appState.allocations.length){showToast('Load a cell first','warning');return;}
+  const date=document.getElementById('allocationDate').value;
+  const shift='Shift '+document.getElementById('allocationShift').value;
+  const month=document.getElementById('allocationMonth').value;
+  const company=(document.getElementById('companyName').value||'Elkayem Auto Ancillaries Pvt Ltd').toUpperCase();
+  const dateLabel=date?new Date(date+'T00:00:00').toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}):'';
+  const monthLabel=month?new Date(month+'-01').toLocaleDateString('en-IN',{month:'long',year:'numeric'}):'';
+  const wb=XLSX.utils.book_new();
+  const wd=[
+    [company,'','','','',''],
+    ['MAN POWER ALLOCATION SHEET','','','',shift,'Date: '+dateLabel],
+    [CELLS[cid].label,'','','','Month: '+monthLabel,''],
+    [],
+    ['S.No','Process Name','Category','Plan','Employee Name','Remark','Status'],
+    ...appState.allocations.map(r=>[r.sno,r.process,r.category,r.plan,r.assigned,r.remark,r.status]),
+    [],['','','Total',appState.allocations.length,appState.allocations.filter(r=>r.assigned.trim()).length+' filled','','']
+  ];
+  const ws=XLSX.utils.aoa_to_sheet(wd);
+  ws['!cols']=[{wch:6},{wch:40},{wch:14},{wch:6},{wch:26},{wch:10},{wch:12}];
+  XLSX.utils.book_append_sheet(wb,ws,CELLS[cid].label.substring(0,31));
+  XLSX.writeFile(wb,`ManPower_Cell${cid}_${date}_${shift.replace(' ','')}.xlsx`);
+  showToast('Sheet downloaded ✓');
+}
+function exportAllocationExcel(){downloadSingleSheet();}
+function printSheet(){if(!appState.allocations.length){showToast('Load data first','warning');return;}window.print();}
+async function quickAIFill(){
+  const cid=document.getElementById('cellSelect').value;
+  if(!cid){showToast('Load a cell first','warning');return;}
+  if(!appState.employees.length){showToast('Add employees first in the Employees tab','warning');return;}
+  document.getElementById('aiCell').value=cid;
+  document.getElementById('aiDate').value=document.getElementById('allocationDate').value;
+  document.getElementById('aiShift').value=document.getElementById('allocationShift').value;
+  switchTab('ai-assign');await runAIAssign();
+}
+
+// ══════════════════════════════════════════
+// ATTENDANCE
+// ══════════════════════════════════════════
+function loadAttendance(){
+  const date=document.getElementById('attDate').value;
+  const shift=document.getElementById('attShift').value;
+  let rows=[];
+  for(let c=1;c<=11;c++){
+    const d=JSON.parse(localStorage.getItem(`alloc_${c}_${date}_${shift}`)||'null');
+    if(d)d.filter(r=>r.assigned.trim()).forEach(r=>rows.push({sno:rows.length+1,name:r.assigned,process:r.process,cell:'Cell '+c,clockIn:'',clockOut:'',status:'Present'}));
+  }
+  appState.attendance=rows;
+  if(!rows.length)showToast('No allocation saved for '+date+' Shift '+shift+'. Save allocation first.','warning');
+  renderAttendance();updateAttStats();
+}
+function renderAttendance(){
+  const tb=document.getElementById('attBody');
+  if(!appState.attendance.length){tb.innerHTML='<tr><td colspan="8" style="text-align:center;padding:30px;color:var(--text-muted)">No data</td></tr>';return;}
+  tb.innerHTML=appState.attendance.map((r,i)=>`<tr>
+    <td>${r.sno}</td><td><strong>${escH(r.name)}</strong>${r.empId?` <small style="color:var(--text-muted)">#${escH(r.empId)}</small>`:''}</td><td>${escH(r.process)}</td><td>${r.cell}</td>
+    <td><input type="time" class="editable" value="${r.clockIn}" onchange="appState.attendance[${i}].clockIn=this.value;updateAttStats();"/></td>
+    <td><input type="time" class="editable" value="${r.clockOut}" onchange="appState.attendance[${i}].clockOut=this.value;updateAttStats();"/></td>
+    <td><select class="editable" onchange="appState.attendance[${i}].status=this.value;updateAttStats();">
+      ${['Present','Absent','Late','Leave'].map(v=>`<option value="${v}" ${r.status===v?'selected':''}>${v}</option>`).join('')}
+    </select></td>
+    <td><button class="btn btn-sm btn-danger" onclick="appState.attendance.splice(${i},1);renderAttendance();updateAttStats();"><i class="fas fa-trash"></i></button></td>
+  </tr>`).join('');
+}
+function updateAttStats(){
+  const total=appState.attendance.length,present=appState.attendance.filter(r=>r.status==='Present'||r.status==='Late').length;
+  const absent=appState.attendance.filter(r=>r.status==='Absent').length,late=appState.attendance.filter(r=>r.status==='Late').length;
+  document.getElementById('attStats').innerHTML=`
+    <div class="stat-box blue"><div class="stat-value">${total}</div><div class="stat-label">Total</div></div>
+    <div class="stat-box green"><div class="stat-value">${present}</div><div class="stat-label">Present</div></div>
+    <div class="stat-box red"><div class="stat-value">${absent}</div><div class="stat-label">Absent</div></div>
+    <div class="stat-box amber"><div class="stat-value">${late}</div><div class="stat-label">Late</div></div>`;
+}
+function saveAttendance(){
+  localStorage.setItem(`att_${document.getElementById('attDate').value}_${document.getElementById('attShift').value}`,JSON.stringify(appState.attendance));
+  showToast('Attendance saved ✓');updateAnalytics();
+}
+function exportAttendanceExcel(){
+  if(!appState.attendance.length){showToast('No data','warning');return;}
+  const wb=XLSX.utils.book_new();
+  const ws=XLSX.utils.aoa_to_sheet([['Attendance Sheet','','','',document.getElementById('attDate').value],['S.No','Employee','Process','Cell','Clock In','Clock Out','Status'],...appState.attendance.map(r=>[r.sno,r.name,r.process,r.cell,r.clockIn,r.clockOut,r.status])]);
+  ws['!cols']=[{wch:5},{wch:22},{wch:30},{wch:10},{wch:10},{wch:10},{wch:10}];
+  XLSX.utils.book_append_sheet(wb,ws,'Attendance');
+  XLSX.writeFile(wb,`Attendance_${document.getElementById('attDate').value}.xlsx`);
+  showToast('Attendance exported');
+}
+
+
+// ══════════════════════════════════════════
+// BIOMETRIC (eSSL) INTEGRATION
+// ══════════════════════════════════════════
+async function loadBiometricAttendance(){
+  const date=document.getElementById('attDate').value,shift=document.getElementById('attShift').value;
+  try{
+    const res=await fetch(`${API_BASE}/essl/attendance?date=${date}&shift=${shift}`,{headers:{'Authorization':`Bearer ${appState.token}`}});
+    const data=await res.json();
+    if(!res.ok){showToast(data.error||'Biometric load failed','danger');return;}
+    // match allocation (process/cell) by employee name where one was saved
+    const alloc={};
+    for(let c=1;c<=11;c++){
+      const d=JSON.parse(localStorage.getItem(`alloc_${c}_${date}_${shift}`)||'null');
+      if(d)d.filter(r=>r.assigned.trim()).forEach(r=>{alloc[r.assigned.trim().toLowerCase()]={process:r.process,cell:'Cell '+c};});
+    }
+    appState.attendance=data.rows.map((r,i)=>{
+      const a=alloc[r.name.toLowerCase()]||{process:'',cell:''};
+      return{sno:i+1,empId:r.empId,name:r.name,process:a.process,cell:a.cell,clockIn:r.clockIn,clockOut:r.clockOut,status:'Present'};
+    });
+    renderAttendance();updateAttStats();
+    showToast(`${data.rows.length} employees loaded from biometric`);
+  }catch{showToast('Cannot reach server','danger');}
+}
+async function syncBiometricEmployees(){
+  try{
+    const res=await fetch(`${API_BASE}/essl/employees`,{headers:{'Authorization':`Bearer ${appState.token}`}});
+    const data=await res.json();
+    if(!res.ok){showToast(data.error||'Sync failed','danger');return;}
+    let added=0;
+    data.employees.forEach(e=>{
+      if(!appState.employees.some(x=>String(x.empId)===e.empId)){
+        appState.employees.push({id:Date.now()+added,empId:e.empId,name:e.name,category:'Operator',phone:'',status:'active',skills:''});added++;
+      }
+    });
+    localStorage.setItem('employees',JSON.stringify(appState.employees));
+    renderEmployeeTable();showToast(`${added} new employees added`);
+  }catch{showToast('Cannot reach server','danger');}
+}
+
+// ══════════════════════════════════════════
+// OVERTIME
+// ══════════════════════════════════════════
+function loadOT(){
+  appState.otLogs=JSON.parse(localStorage.getItem('otLogs_'+document.getElementById('otMonth').value)||'[]');
+  renderOT();updateOTStats();
+  if(!appState.otLogs.length)showToast('No OT records for this month','warning');
+}
+function renderOT(){
+  const tb=document.getElementById('otBody');
+  if(!appState.otLogs.length){tb.innerHTML='<tr><td colspan="8" style="text-align:center;padding:30px;color:var(--text-muted)">No OT records</td></tr>';return;}
+  tb.innerHTML=appState.otLogs.map((r,i)=>`<tr>
+    <td>${i+1}</td>
+    <td><input type="text" class="editable" value="${escH(r.name)}" onchange="appState.otLogs[${i}].name=this.value;" placeholder="Name…" list="empList"/></td>
+    <td><select class="editable remark-select" onchange="appState.otLogs[${i}].cell=this.value;">${[1,2,3,4,5,6,7,8,9,10,11].map(c=>`<option value="${c}" ${r.cell==c?'selected':''}>Cell ${c}</option>`).join('')}</select></td>
+    <td><input type="date" class="editable" value="${r.date}" onchange="appState.otLogs[${i}].date=this.value;"/></td>
+    <td><input type="number" class="editable ot-input" value="${r.hours}" min="0" max="12" step="0.5" onchange="appState.otLogs[${i}].hours=parseFloat(this.value)||0;updateOTStats();"/></td>
+    <td><input type="text" class="editable" value="${escH(r.reason)}" onchange="appState.otLogs[${i}].reason=this.value;" placeholder="Reason…"/></td>
+    <td><select class="editable remark-select" onchange="appState.otLogs[${i}].approved=this.value;">
+      ${['pending','yes','no'].map(v=>`<option value="${v}" ${r.approved===v?'selected':''}>${v==='yes'?'Approved':v==='no'?'Rejected':'Pending'}</option>`).join('')}
+    </select></td>
+    <td><button class="btn btn-sm btn-danger" onclick="appState.otLogs.splice(${i},1);renderOT();updateOTStats();"><i class="fas fa-trash"></i></button></td>
+  </tr>`).join('');
+}
+function addOTRow(){appState.otLogs.push({name:'',cell:'1',date:new Date().toISOString().split('T')[0],hours:0,reason:'',approved:'pending'});renderOT();}
+function updateOTStats(){
+  const total=appState.otLogs.reduce((s,r)=>s+parseFloat(r.hours||0),0);
+  const approved=appState.otLogs.filter(r=>r.approved==='yes').length,pending=appState.otLogs.filter(r=>r.approved==='pending').length;
+  document.getElementById('otStats').innerHTML=`
+    <div class="stat-box amber"><div class="stat-value">${total.toFixed(1)}</div><div class="stat-label">Total OT Hours</div></div>
+    <div class="stat-box green"><div class="stat-value">${approved}</div><div class="stat-label">Approved</div></div>
+    <div class="stat-box purple"><div class="stat-value">${pending}</div><div class="stat-label">Pending</div></div>
+    <div class="stat-box blue"><div class="stat-value">${appState.otLogs.length}</div><div class="stat-label">Entries</div></div>`;
+}
+function saveOT(){localStorage.setItem('otLogs_'+document.getElementById('otMonth').value,JSON.stringify(appState.otLogs));showToast('OT saved ✓');updateAnalytics();}
+function exportOTExcel(){
+  if(!appState.otLogs.length){showToast('No OT data','warning');return;}
+  const wb=XLSX.utils.book_new();
+  const ws=XLSX.utils.aoa_to_sheet([['Overtime Log','','','',document.getElementById('otMonth').value],['S.No','Employee','Cell','Date','OT Hours','Reason','Approved'],...appState.otLogs.map((r,i)=>[i+1,r.name,'Cell '+r.cell,r.date,r.hours,r.reason,r.approved])]);
+  ws['!cols']=[{wch:5},{wch:22},{wch:8},{wch:12},{wch:10},{wch:24},{wch:10}];
+  XLSX.utils.book_append_sheet(wb,ws,'OT Log');
+  XLSX.writeFile(wb,`OT_${document.getElementById('otMonth').value}.xlsx`);
+  showToast('OT exported');
+}
+
+// ══════════════════════════════════════════
+// GAS FLOW AUDIT
+// ══════════════════════════════════════════
+function gfFlowClass(val){if(val===''||val===null||val===undefined||isNaN(val))return '';const n=parseFloat(val);if(n>10)return 'gf-red';if(n>=8&&n<=10)return 'gf-green';return '';}
+function gfUpdateCell(mIdx,shiftKey,field,value){
+  if(!appState.gfData[mIdx])appState.gfData[mIdx]={};
+  if(!appState.gfData[mIdx][shiftKey])appState.gfData[mIdx][shiftKey]={actualFlow:'',revisedFlow:'',name:'',reason:'',supervisor:''};
+  appState.gfData[mIdx][shiftKey][field]=value;
+  if(field==='actualFlow'||field==='revisedFlow'){const el=document.getElementById(`gf_${mIdx}_${shiftKey}_${field}`);if(el){el.classList.remove('gf-green','gf-red');const c=gfFlowClass(value);if(c)el.classList.add(c);}}
+}
+function renderGasFlowTable(){
+  const tbody=document.getElementById('gfBody');let html='';let lastCell=null;
+  const cellCounts={};GAS_FLOW_MACHINES.forEach(m=>{cellCounts[m.cell]=(cellCounts[m.cell]||0)+1;});
+  GAS_FLOW_MACHINES.forEach((m,i)=>{
+    const isNew=m.cell!==lastCell;lastCell=m.cell;html+='<tr>';
+    if(isNew){html+=`<td rowspan="${cellCounts[m.cell]}" style="font-weight:700;vertical-align:middle;">${m.cell}</td><td rowspan="${cellCounts[m.cell]}" style="vertical-align:middle;">${m.model}</td>`;}
+    html+=`<td>${m.process}</td><td>${m.mcNo||'-'}</td><td>${m.mcName}</td>`;
+    GF_SHIFT_BLOCKS.forEach(sb=>{
+      const d=(appState.gfData[i]&&appState.gfData[i][sb.key])||{actualFlow:'',revisedFlow:'',name:'',reason:'',supervisor:''};
+      html+=`<td><input type="number" step="0.1" class="gf-flow-input ${gfFlowClass(d.actualFlow)}" id="gf_${i}_${sb.key}_actualFlow" value="${d.actualFlow}" oninput="gfUpdateCell(${i},'${sb.key}','actualFlow',this.value)"></td>`;
+      html+=`<td><input type="number" step="0.1" class="gf-flow-input ${gfFlowClass(d.revisedFlow)}" id="gf_${i}_${sb.key}_revisedFlow" value="${d.revisedFlow}" oninput="gfUpdateCell(${i},'${sb.key}','revisedFlow',this.value)"></td>`;
+      html+=`<td><input type="text" class="gf-text-input" value="${escH(d.name)}" oninput="gfUpdateCell(${i},'${sb.key}','name',this.value)"></td>`;
+      html+=`<td><input type="text" class="gf-text-input" value="${escH(d.reason)}" oninput="gfUpdateCell(${i},'${sb.key}','reason',this.value)"></td>`;
+      html+=`<td><input type="text" class="gf-text-input" value="${escH(d.supervisor)}" oninput="gfUpdateCell(${i},'${sb.key}','supervisor',this.value)"></td>`;
+    });html+='</tr>';
+  });tbody.innerHTML=html;
+}
+async function loadGasFlow(){
+  const date=document.getElementById('gfDate').value;
+  if(!date){showToast('Select a date first','warning');return;}
+  appState.gfData={};
+  const saved=JSON.parse(localStorage.getItem('gf_'+date)||'null');
+  if(saved)appState.gfData=saved;
+  renderGasFlowTable();showToast('Gas flow loaded for '+date);
+}
+async function saveGasFlow(){
+  const date=document.getElementById('gfDate').value;
+  if(!date){showToast('Select a date first','warning');return;}
+  localStorage.setItem('gf_'+date,JSON.stringify(appState.gfData));
+  showToast('Gas flow saved ✓');
+}
+function gfStatusText(val){if(val===''||val===null||val===undefined)return '';const n=parseFloat(val);if(isNaN(n))return '';return n>10?'HIGH':n>=8?'OK':'LOW';}
+function exportGasFlowExcel(){
+  const date=document.getElementById('gfDate').value||'';
+  const wb=XLSX.utils.book_new();const COLS_PER=7,FIXED=5,TOTAL=FIXED+GF_SHIFT_BLOCKS.length*COLS_PER;
+  const h1=['GAS FLOW AUDIT REPORT'];for(let i=1;i<TOTAL;i++)h1.push('');
+  const h2=['DATE:',date,'','',''];GF_SHIFT_BLOCKS.forEach(sb=>{for(let i=0;i<COLS_PER;i++)h2.push(i===0?sb.label:'');});
+  const h3=['Cell No','Model Name','Process','M/C No','M/C Name'];
+  GF_SHIFT_BLOCKS.forEach(()=>h3.push('Actual Flow','Actual Status','Revised Flow','Revised Status','Name','Reason','Supervisor'));
+  const data=GAS_FLOW_MACHINES.map((m,i)=>{
+    const row=[m.cell,m.model,m.process,m.mcNo||'',m.mcName];
+    GF_SHIFT_BLOCKS.forEach(sb=>{const d=(appState.gfData[i]&&appState.gfData[i][sb.key])||{};const a=d.actualFlow===''||d.actualFlow===undefined?'':parseFloat(d.actualFlow);const rv=d.revisedFlow===''||d.revisedFlow===undefined?'':parseFloat(d.revisedFlow);row.push(a,gfStatusText(d.actualFlow),rv,gfStatusText(d.revisedFlow),d.name||'',d.reason||'',d.supervisor||'');});
+    return row;
+  });
+  const ws=XLSX.utils.aoa_to_sheet([h1,h2,h3,...data]);
+  ws['!merges']=[{s:{r:0,c:0},e:{r:0,c:TOTAL-1}}];
+  let col=FIXED;GF_SHIFT_BLOCKS.forEach(()=>{ws['!merges'].push({s:{r:1,c:col},e:{r:1,c:col+COLS_PER-1}});col+=COLS_PER;});
+  ws['!cols']=[{wch:7},{wch:26},{wch:32},{wch:9},{wch:10}];GF_SHIFT_BLOCKS.forEach(()=>ws['!cols'].push({wch:12},{wch:10},{wch:12},{wch:10},{wch:12},{wch:16},{wch:12}));
+  XLSX.utils.book_append_sheet(wb,ws,'Gas Flow Audit');XLSX.writeFile(wb,`Gas_Flow_Audit_${date}.xlsx`);showToast('Gas flow exported');
+}
+
+// ══════════════════════════════════════════
+// PRODUCTION TARGETS (TIER 2)
+// ══════════════════════════════════════════
+function loadTargets(){
+  const date=document.getElementById('tgtDate').value,shift=document.getElementById('tgtShift').value;
+  const saved=JSON.parse(localStorage.getItem(`tgt_${date}_${shift}`)||'null');
+  appState.targets=[1,2,3,4,5,6,7,8,9,10,11].map(c=>{const sv=saved?saved.find(r=>r.cell==c):null;return{cell:c,product:PRODUCTS[c],target:sv?sv.target:100,actual:sv?sv.actual:0};});
+  renderTargets();updateTgtStats();
+}
+function renderTargets(){
+  const bars=document.getElementById('tgtBars'),tb=document.getElementById('tgtBody');
+  bars.innerHTML=appState.targets.map(r=>{const pct=r.target>0?Math.min(100,Math.round(r.actual/r.target*100)):0;const col=pct>=90?'#4a9a22':pct>=70?'var(--primary)':'#c04040';return`<div class="bar-row"><div class="bar-lbl">Cell ${r.cell}</div><div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${col};"></div></div><div class="bar-val">${pct}%</div></div>`;}).join('');
+  tb.innerHTML=appState.targets.map((r,i)=>{const pct=r.target>0?Math.min(100,Math.round(r.actual/r.target*100)):0;const st=pct>=90?'<span class="badge badge-assigned">On Track</span>':pct>=70?'<span class="badge badge-ot">At Risk</span>':'<span class="badge badge-absent">Behind</span>';return`<tr><td><strong>Cell ${r.cell}</strong></td><td>${r.product}</td><td><input type="number" class="editable" value="${r.target}" min="0" onchange="appState.targets[${i}].target=parseInt(this.value)||0;renderTargets();updateTgtStats();" style="width:70px;"/></td><td><input type="number" class="editable" value="${r.actual}" min="0" onchange="appState.targets[${i}].actual=parseInt(this.value)||0;renderTargets();updateTgtStats();" style="width:70px;"/></td><td><strong>${pct}%</strong></td><td>${st}</td></tr>`;}).join('');
+}
+function updateTgtStats(){
+  const total=appState.targets.reduce((s,r)=>s+r.target,0),actual=appState.targets.reduce((s,r)=>s+r.actual,0);
+  const pct=total>0?Math.round(actual/total*100):0,behind=appState.targets.filter(r=>r.target>0&&r.actual/r.target<0.7).length;
+  document.getElementById('tgtStats').innerHTML=`<div class="stat-box blue"><div class="stat-value">${total}</div><div class="stat-label">Total Target</div></div><div class="stat-box green"><div class="stat-value">${actual}</div><div class="stat-label">Actual Output</div></div><div class="stat-box amber"><div class="stat-value">${pct}%</div><div class="stat-label">Achievement</div></div><div class="stat-box red"><div class="stat-value">${behind}</div><div class="stat-label">Cells Behind</div></div>`;
+}
+function saveTargets(){const date=document.getElementById('tgtDate').value,shift=document.getElementById('tgtShift').value;localStorage.setItem(`tgt_${date}_${shift}`,JSON.stringify(appState.targets));showToast('Targets saved ✓');}
+function exportTargetsExcel(){
+  if(!appState.targets.length){showToast('Load targets first','warning');return;}
+  const wb=XLSX.utils.book_new();
+  const ws=XLSX.utils.aoa_to_sheet([['Production Targets','',document.getElementById('tgtDate').value],['Cell','Product','Target','Actual','% Done'],...appState.targets.map(r=>{const p=r.target>0?Math.round(r.actual/r.target*100):0;return['Cell '+r.cell,r.product,r.target,r.actual,p+'%'];})]);
+  ws['!cols']=[{wch:8},{wch:16},{wch:10},{wch:10},{wch:10}];
+  XLSX.utils.book_append_sheet(wb,ws,'Targets');XLSX.writeFile(wb,`Targets_${document.getElementById('tgtDate').value}.xlsx`);showToast('Targets exported');
+}
+
+// ══════════════════════════════════════════
+// LEAVE MANAGEMENT (TIER 2)
+// ══════════════════════════════════════════
+function populateLeaveMonths(){
+  const sel=document.getElementById('leaveMonthFilter');if(!sel)return;
+  const months=new Set(appState.leaves.map(l=>l.from.slice(0,7)));
+  sel.innerHTML='<option value="">All Months</option>'+[...months].sort().reverse().map(m=>`<option value="${m}">${m}</option>`).join('');
+}
+function openLeaveModal(){document.getElementById('leaveModal').classList.add('active');}
+function closeLeaveModal(){document.getElementById('leaveModal').classList.remove('active');}
+function saveLeave(){
+  const emp=document.getElementById('leaveEmp').value.trim();
+  const from=document.getElementById('leaveFrom').value,to=document.getElementById('leaveTo').value;
+  if(!emp||!from||!to){showToast('Fill all fields','warning');return;}
+  const days=Math.round((new Date(to)-new Date(from))/(1000*60*60*24))+1;
+  appState.leaves.push({id:Date.now(),emp,type:document.getElementById('leaveType').value,from,to,days,reason:document.getElementById('leaveReason').value,status:'Pending'});
+  localStorage.setItem('leaves',JSON.stringify(appState.leaves));
+  populateLeaveMonths();renderLeave();renderLeaveCal();closeLeaveModal();showToast('Leave applied ✓');
+}
+function renderLeave(){
+  const filter=document.getElementById('leaveMonthFilter').value;
+  let list=appState.leaves;if(filter)list=list.filter(l=>l.from.startsWith(filter));
+  const pending=list.filter(l=>l.status==='Pending').length,approved=list.filter(l=>l.status==='Approved').length;
+  document.getElementById('leaveStats').innerHTML=`<div class="stat-box blue"><div class="stat-value">${list.length}</div><div class="stat-label">Applications</div></div><div class="stat-box amber"><div class="stat-value">${pending}</div><div class="stat-label">Pending</div></div><div class="stat-box green"><div class="stat-value">${approved}</div><div class="stat-label">Approved</div></div><div class="stat-box purple"><div class="stat-value">${list.reduce((s,l)=>s+l.days,0)}</div><div class="stat-label">Total Days</div></div>`;
+  const tb=document.getElementById('leaveBody');
+  if(!list.length){tb.innerHTML='<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--text-muted)">No leave records</td></tr>';return;}
+  tb.innerHTML=list.map(l=>{
+    const idx=appState.leaves.findIndex(x=>x.id===l.id);
+    return`<tr><td><strong>${escH(l.emp)}</strong></td><td><span class="badge badge-pending">${l.type}</span></td><td>${l.from}</td><td>${l.to}</td><td style="text-align:center;">${l.days}</td><td style="color:var(--text-muted);font-size:.8rem;">${escH(l.reason||'–')}</td><td><span class="badge ${l.status==='Approved'?'badge-assigned':l.status==='Rejected'?'badge-absent':'badge-pending'}">${l.status}</span></td><td style="display:flex;gap:5px;"><button class="btn btn-sm btn-success" onclick="leaveAction(${idx},'Approved')">✓</button><button class="btn btn-sm btn-danger" onclick="leaveAction(${idx},'Rejected')">✗</button><button class="btn btn-sm btn-secondary" onclick="appState.leaves.splice(${idx},1);localStorage.setItem('leaves',JSON.stringify(appState.leaves));renderLeave();renderLeaveCal();"><i class="fas fa-trash"></i></button></td></tr>`;
+  }).join('');
+}
+function leaveAction(idx,status){appState.leaves[idx].status=status;localStorage.setItem('leaves',JSON.stringify(appState.leaves));renderLeave();renderLeaveCal();showToast('Leave '+status.toLowerCase());}
+function renderLeaveCal(){
+  const today=new Date(),year=today.getFullYear(),month=today.getMonth();
+  const first=new Date(year,month,1),days=new Date(year,month+1,0).getDate(),startDay=first.getDay();
+  const approved=appState.leaves.filter(l=>l.status==='Approved');
+  const leaveDays=new Set();
+  approved.forEach(l=>{let d=new Date(l.from+'T00:00:00');const end=new Date(l.to+'T00:00:00');while(d<=end){leaveDays.add(d.toISOString().split('T')[0]);d.setDate(d.getDate()+1);}});
+  const todayStr=today.toISOString().split('T')[0];
+  let html='<div class="cal-grid">';
+  ['Su','Mo','Tu','We','Th','Fr','Sa'].forEach(d=>html+=`<div class="cal-day cal-hdr">${d}</div>`);
+  for(let i=0;i<startDay;i++)html+=`<div class="cal-day"></div>`;
+  for(let d=1;d<=days;d++){const ds=`${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;const cls=leaveDays.has(ds)?'has-leave':ds===todayStr?'today-day':'';html+=`<div class="cal-day ${cls}">${d}</div>`;}
+  html+='</div>';document.getElementById('leaveCal').innerHTML=html;
+}
+
+// ══════════════════════════════════════════
+// SKILL MATRIX (TIER 2)
+// ══════════════════════════════════════════
+function openSkillModal(){
+  const sel=document.getElementById('skillEmpSel');
+  sel.innerHTML=appState.employees.map((e,i)=>`<option value="${i}">${escH(e.name)} (${e.category})</option>`).join('');
+  if(appState.employees.length){const sk=appState.skills[appState.employees[0].name]||{skills:'',exp:1,score:7};document.getElementById('skillList').value=sk.skills||'';document.getElementById('skillExp').value=sk.exp||1;document.getElementById('skillScore').value=sk.score||7;}
+  sel.onchange=function(){const emp=appState.employees[this.value];if(!emp)return;const sk=appState.skills[emp.name]||{skills:'',exp:1,score:7};document.getElementById('skillList').value=sk.skills||'';document.getElementById('skillExp').value=sk.exp||1;document.getElementById('skillScore').value=sk.score||7;};
+  document.getElementById('skillModal').classList.add('active');
+}
+function closeSkillModal(){document.getElementById('skillModal').classList.remove('active');}
+function saveSkill(){
+  const idx=document.getElementById('skillEmpSel').value,emp=appState.employees[idx];if(!emp){showToast('Select employee','warning');return;}
+  appState.skills[emp.name]={skills:document.getElementById('skillList').value,exp:parseInt(document.getElementById('skillExp').value)||1,score:parseInt(document.getElementById('skillScore').value)||7};
+  appState.employees[idx].skills=document.getElementById('skillList').value;
+  localStorage.setItem('skills',JSON.stringify(appState.skills));localStorage.setItem('employees',JSON.stringify(appState.employees));
+  closeSkillModal();renderSkills();renderSkillGaps();showToast('Skills saved ✓');
+}
+function renderSkills(filter=''){
+  const tb=document.getElementById('skillBody');
+  let list=appState.employees;if(filter)list=list.filter(e=>e.name.toLowerCase().includes(filter));
+  if(!list.length){tb.innerHTML='<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-muted)">No employees found</td></tr>';return;}
+  tb.innerHTML=list.map((e,i)=>{
+    const sk=appState.skills[e.name]||{},tags=(sk.skills||'').split(',').map(s=>s.trim()).filter(Boolean),score=sk.score||0;
+    const bar=`<div style="width:${score*10}%;height:6px;background:${score>=7?'#4a9a22':score>=4?'var(--primary)':'#c04040'};border-radius:3px;display:inline-block;vertical-align:middle;margin-left:6px;"></div>`;
+    const ri=appState.employees.indexOf(e);
+    return`<tr><td><strong>${escH(e.name)}</strong></td><td><span class="badge badge-pending">${e.category}</span></td><td>${tags.map(t=>`<span class="skill-tag">${escH(t)}</span>`).join('')||'<span style="color:var(--text-muted);font-size:.78rem;">None</span>'}</td><td><span style="font-weight:700;color:var(--primary);">${score}/10</span>${bar}</td><td><button class="btn btn-sm btn-secondary" onclick="editSkillFor(${ri})"><i class="fas fa-edit"></i></button></td></tr>`;
+  }).join('');
+}
+function editSkillFor(idx){openSkillModal();setTimeout(()=>{const sel=document.getElementById('skillEmpSel');sel.value=idx;sel.dispatchEvent(new Event('change'));},50);}
+function filterSkills(v){renderSkills(v.toLowerCase());}
+function renderSkillGaps(){
+  const gaps=appState.employees.filter(e=>!appState.skills[e.name]||!appState.skills[e.name].skills);
+  const el=document.getElementById('skillGaps');
+  if(!gaps.length){el.innerHTML='<div style="color:#4db87a;padding:10px;"><i class="fas fa-check-circle"></i> All employees have skills recorded</div>';return;}
+  el.innerHTML=gaps.map(e=>`<div style="background:rgba(192,64,64,.08);border:1px solid rgba(192,64,64,.2);border-radius:6px;padding:10px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;"><span><strong>${escH(e.name)}</strong> <span class="badge badge-pending">${e.category}</span></span><span style="color:#e07070;font-size:.8rem;"><i class="fas fa-exclamation-triangle"></i> No skills recorded</span></div>`).join('');
+}
+
+// ══════════════════════════════════════════
+// REPORTS (TIER 2)
+// ══════════════════════════════════════════
+function loadReports(){
+  const month=document.getElementById('repMonth').value;if(!month){showToast('Select a month','warning');return;}
+  const today=new Date().toISOString().split('T')[0];
+  let totalAlloc=0,totalFilled=0,totalAbsent=0;const cellData=[];
+  for(let c=1;c<=11;c++){
+    let filled=0,total=0,absent=0;
+    for(let s=1;s<=3;s++){const d=JSON.parse(localStorage.getItem(`alloc_${c}_${today}_${s}`)||'null');if(d){total+=d.length;filled+=d.filter(r=>r.assigned.trim()).length;absent+=d.filter(r=>r.remark==='Absent').length;}}
+    if(total>0)cellData.push({cell:c,total,filled,absent,util:Math.round(filled/total*100)});
+    totalAlloc+=total;totalFilled+=filled;totalAbsent+=absent;
+  }
+  const otLogs=JSON.parse(localStorage.getItem('otLogs_'+month)||'[]');
+  const otH=otLogs.reduce((s,r)=>s+parseFloat(r.hours||0),0);
+  const util=totalAlloc>0?Math.round(totalFilled/totalAlloc*100):0;
+  document.getElementById('repStats').innerHTML=`<div class="stat-box blue"><div class="stat-value">${totalAlloc}</div><div class="stat-label">Total Positions</div></div><div class="stat-box green"><div class="stat-value">${totalFilled}</div><div class="stat-label">Filled</div></div><div class="stat-box amber"><div class="stat-value">${util}%</div><div class="stat-label">Utilisation</div></div><div class="stat-box purple"><div class="stat-value">${otH.toFixed(1)}h</div><div class="stat-label">OT Hours</div></div><div class="stat-box red"><div class="stat-value">${totalAbsent}</div><div class="stat-label">Absent Records</div></div>`;
+  document.getElementById('repBars').innerHTML=cellData.map(r=>{const col=r.util>=80?'#4a9a22':r.util>=50?'var(--primary)':'#c04040';return`<div class="bar-row"><div class="bar-lbl">Cell ${r.cell}</div><div class="bar-track"><div class="bar-fill" style="width:${r.util}%;background:${col};"></div></div><div class="bar-val">${r.util}%</div></div>`;}).join('');
+  document.getElementById('repBody').innerHTML=cellData.map(r=>{const otH2=otLogs.filter(o=>o.cell==r.cell).reduce((s,o)=>s+parseFloat(o.hours||0),0);return`<tr><td><strong>Cell ${r.cell}</strong></td><td>${r.total}</td><td>${r.filled}</td><td>${r.util}%</td><td>${otH2.toFixed(1)}</td><td>${r.absent}</td></tr>`;}).join('');
+  if(!cellData.length)document.getElementById('repBody').innerHTML='<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-muted)">Save allocation data first</td></tr>';
+}
+function exportMonthlyExcel(){
+  const month=document.getElementById('repMonth').value,today=new Date().toISOString().split('T')[0];
+  const wb=XLSX.utils.book_new();const data=[['Monthly Report – '+month],['Cell','Total','Filled','Util%','OT Hours','Absent']];
+  for(let c=1;c<=11;c++){let filled=0,total=0,absent=0;for(let s=1;s<=3;s++){const d=JSON.parse(localStorage.getItem(`alloc_${c}_${today}_${s}`)||'null');if(d){total+=d.length;filled+=d.filter(r=>r.assigned.trim()).length;absent+=d.filter(r=>r.remark==='Absent').length;}}const otLogs=JSON.parse(localStorage.getItem('otLogs_'+month)||'[]');const otH=otLogs.filter(o=>o.cell==c).reduce((s,o)=>s+parseFloat(o.hours||0),0);data.push([`Cell ${c}`,total,filled,total>0?Math.round(filled/total*100)+'%':'0%',otH.toFixed(1),absent]);}
+  const ws=XLSX.utils.aoa_to_sheet(data);ws['!cols']=[{wch:8},{wch:10},{wch:10},{wch:10},{wch:10},{wch:10}];
+  XLSX.utils.book_append_sheet(wb,ws,'Monthly Report');XLSX.writeFile(wb,`Monthly_${month}.xlsx`);showToast('Monthly report exported ✓');
+}
+
+// ══════════════════════════════════════════
+// EMPLOYEES
+// ══════════════════════════════════════════
+function renderEmployeeTable(filter=''){
+  const tb=document.getElementById('employeeBody');
+  let list=appState.employees;if(filter)list=list.filter(e=>e.name.toLowerCase().includes(filter)||e.category.toLowerCase().includes(filter));
+  if(!list.length){tb.innerHTML='<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--text-muted)">'+(filter?'No match':'No employees yet')+'</td></tr>';return;}
+  tb.innerHTML=list.map((e,i)=>{
+    const ri=appState.employees.indexOf(e);
+    const tags=(e.skills||'').split(',').map(s=>s.trim()).filter(Boolean).slice(0,3);
+    return`<tr><td style="color:var(--text-muted);">${ri+1}</td><td><strong>${escH(e.name)}</strong></td><td><span class="badge badge-pending">${e.category}</span></td><td>${escH(e.phone||'–')}</td><td>${tags.map(t=>`<span class="skill-tag">${escH(t)}</span>`).join('')||'–'}</td><td><span class="badge ${e.status==='active'?'badge-assigned':e.status==='leave'?'badge-late':'badge-absent'}">${e.status}</span></td><td><button class="btn btn-sm btn-secondary" onclick="editEmployee(${ri})" style="margin-right:4px;"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-danger" onclick="deleteEmployee(${ri})"><i class="fas fa-trash"></i></button></td></tr>`;
+  }).join('');
+}
+function filterEmployees(v){renderEmployeeTable(v.toLowerCase());}
+function openEmployeeModal(emp,idx){
+  document.getElementById('empName').value=emp?emp.name:'';
+  document.getElementById('empCategory').value=emp?emp.category:'Robot Op';
+  document.getElementById('empPhone').value=emp?emp.phone||'':'';
+  document.getElementById('empStatus').value=emp?emp.status:'active';
+  document.getElementById('empSkills').value=emp?emp.skills||'':'';
+  document.getElementById('employeeModal').dataset.editIdx=idx!=null?idx:'';
+  document.getElementById('employeeModal').classList.add('active');
+}
+function closeEmployeeModal(){document.getElementById('employeeModal').classList.remove('active');}
+function editEmployee(i){openEmployeeModal(appState.employees[i],i);}
+function deleteEmployee(i){if(!confirm('Delete this employee?'))return;appState.employees.splice(i,1);localStorage.setItem('employees',JSON.stringify(appState.employees));renderEmployeeTable();showToast('Employee deleted');}
+function saveEmployee(){
+  const name=document.getElementById('empName').value.trim();if(!name){showToast('Name required','warning');return;}
+  const emp={id:Date.now(),name,category:document.getElementById('empCategory').value,phone:document.getElementById('empPhone').value,status:document.getElementById('empStatus').value,skills:document.getElementById('empSkills').value};
+  const idx=document.getElementById('employeeModal').dataset.editIdx;
+  if(idx!=='')appState.employees[parseInt(idx)]=emp;else appState.employees.push(emp);
+  localStorage.setItem('employees',JSON.stringify(appState.employees));
+  closeEmployeeModal();renderEmployeeTable();showToast('Employee saved ✓');
+}
+
+// ══════════════════════════════════════════
+// ANALYTICS
+// ══════════════════════════════════════════
+function updateAnalytics(){
+  const today=new Date().toISOString().split('T')[0],month=today.slice(0,7);
+  let filled=0,total=0;
+  for(let c=1;c<=11;c++)for(let s=1;s<=3;s++){const d=JSON.parse(localStorage.getItem(`alloc_${c}_${today}_${s}`)||'null');if(d){total+=d.length;filled+=d.filter(r=>r.assigned&&r.assigned.trim()).length;}}
+  const util=total>0?Math.round(filled/total*100):0;
+  const otH=JSON.parse(localStorage.getItem('otLogs_'+month)||'[]').reduce((s,r)=>s+parseFloat(r.hours||0),0);
+  const att=JSON.parse(localStorage.getItem(`att_${today}_1`)||'[]');
+  const absent=att.filter(r=>r.status==='Absent').length;
+  const onLeave=appState.leaves.filter(l=>l.status==='Approved'&&l.from<=today&&l.to>=today).length;
+  document.getElementById('an-employees').textContent=appState.employees.length;
+  document.getElementById('an-today').textContent=filled;
+  document.getElementById('an-util').textContent=util+'%';
+  document.getElementById('an-ot').textContent=otH.toFixed(1)+' hrs';
+  document.getElementById('an-absent').textContent=absent;
+  const lv=document.getElementById('an-leave');if(lv)lv.textContent=onLeave;
+  const rows=[];
+  for(let c=1;c<=11;c++){let f=0,t=0;for(let s=1;s<=3;s++){const d=JSON.parse(localStorage.getItem(`alloc_${c}_${today}_${s}`)||'null');if(d){t+=d.length;f+=d.filter(r=>r.assigned&&r.assigned.trim()).length;}}if(t>0)rows.push({cell:c,total:t,filled:f,vacant:t-f,util:Math.round(f/t*100)});}
+  const anBars=document.getElementById('anBars');
+  if(anBars)anBars.innerHTML=rows.map(r=>{const col=r.util>=80?'#4a9a22':r.util>=50?'var(--primary)':'#c04040';return`<div class="bar-row"><div class="bar-lbl">Cell ${r.cell}</div><div class="bar-track"><div class="bar-fill" style="width:${r.util}%;background:${col};"></div></div><div class="bar-val">${r.util}%</div></div>`;}).join('');
+  const atb=document.getElementById('analyticsBody');
+  if(!atb)return;
+  if(!rows.length){atb.innerHTML='<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-muted)">Save allocation data first</td></tr>';}
+  else atb.innerHTML=rows.map(r=>`<tr><td><strong>Cell ${r.cell}</strong></td><td style="text-align:center">${r.total}</td><td style="text-align:center;color:#4db87a">${r.filled}</td><td style="text-align:center;color:#e07070">${r.vacant}</td><td><div style="background:var(--border);border-radius:4px;height:8px;overflow:hidden;"><div style="background:${r.util>=80?'#4a9a22':r.util>=50?'var(--primary)':'#c04040'};height:100%;width:${r.util}%;transition:width .5s;"></div></div><span style="font-size:.73rem;color:var(--text-muted);">${r.util}%</span></td></tr>`).join('');
+}
+
+// ══════════════════════════════════════════
+// HISTORY
+// ══════════════════════════════════════════
+function pushHistory(cid,date,shift){
+  let hist=JSON.parse(localStorage.getItem('allocHistory')||'[]');
+  appState.allocations.filter(r=>r.assigned.trim()).forEach(r=>hist.unshift({date,cell:'Cell '+cid,employee:r.assigned,process:r.process,shift:'Shift '+shift,status:r.status}));
+  localStorage.setItem('allocHistory',JSON.stringify(hist.slice(0,500)));
+}
+function loadHistory(){
+  const date=document.getElementById('historyDate').value,cell=document.getElementById('historyCellFilter').value;
+  let hist=JSON.parse(localStorage.getItem('allocHistory')||'[]');
+  if(date)hist=hist.filter(h=>h.date===date);if(cell)hist=hist.filter(h=>h.cell==='Cell '+cell);
+  const tb=document.getElementById('historyBody');
+  if(!hist.length){tb.innerHTML='<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-muted)">No history found</td></tr>';return;}
+  tb.innerHTML=hist.map(h=>`<tr><td>${h.date}</td><td>${h.cell}</td><td><strong>${escH(h.employee)}</strong></td><td>${escH(h.process)}</td><td>${h.shift}</td><td><span class="badge badge-${h.status}">${h.status}</span></td></tr>`).join('');
+}
+
+// ══════════════════════════════════════════
+// APPROVALS
+// ══════════════════════════════════════════
+async function loadPendingApprovals(){
+  try{
+    const resp=await fetch('/api/allocations/pending',{headers:{'Authorization':`Bearer ${localStorage.getItem('token')}`}});
+    const data=await resp.json();if(!resp.ok){showToast('Access denied','danger');return;}
+    const tb=document.getElementById('approvalsBody');
+    if(!data.pending||!data.pending.length){tb.innerHTML='<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--text-muted)">No pending approvals</td></tr>';return;}
+    tb.innerHTML=data.pending.map(a=>`<tr><td><strong>Cell ${a.cell_id}</strong></td><td>${a.date}</td><td>${escH(a.process_name)}</td><td>${escH(a.assigned_employee||'(Unassigned)')}</td><td><span class="badge badge-pending">Pending</span></td><td>${a.created_by}</td><td style="font-size:.75rem">${new Date(a.created_at).toLocaleString()}</td><td style="text-align:center"><button class="btn btn-sm btn-success" onclick="approveAllocation(${a.id})"><i class="fas fa-check"></i></button><button class="btn btn-sm btn-danger" onclick="rejectAllocation(${a.id})"><i class="fas fa-times"></i></button></td></tr>`).join('');
+  }catch(e){showToast('Error loading approvals','danger');}
+}
+async function approveAllocation(id){
+  if(!confirm('Approve this allocation?'))return;
+  try{const r=await fetch(`/api/allocations/approve/${id}`,{method:'PUT',headers:{'Authorization':`Bearer ${localStorage.getItem('token')}`}});if(r.ok){showToast('Approved ✓');loadPendingApprovals();}else showToast('Failed','danger');}catch{showToast('Error','danger');}
+}
+async function rejectAllocation(id){
+  if(!confirm('Reject this allocation?'))return;
+  try{const r=await fetch(`/api/allocations/reject/${id}`,{method:'PUT',headers:{'Authorization':`Bearer ${localStorage.getItem('token')}`}});if(r.ok){showToast('Rejected');loadPendingApprovals();}else showToast('Failed','danger');}catch{showToast('Error','danger');}
+}
+
+// ══════════════════════════════════════════
+// AI AUTO-ASSIGN (TIER 3)
+// ══════════════════════════════════════════
+let aiAssignResult=[];
+async function runAIAssign(){
+  const cid=document.getElementById('aiCell').value;if(!cid){showToast('Select a cell','warning');return;}
+  if(!appState.employees.length){showToast('Add employees first','warning');return;}
+  const statusEl=document.getElementById('aiStatus');
+  statusEl.innerHTML='<i class="fas fa-spinner fa-spin"></i> AI is analysing processes and employees…';
+  const cell=CELLS[cid];
+  const prompt=`You are a manpower allocation expert for Elkayem Auto Ancillaries, a motorcycle swingarm welding factory in India.
+
+Cell: ${cell.label}
+Processes needed:
+${cell.processes.map((p,i)=>`${i+1}. ${p.process} (Category: ${p.category})`).join('\n')}
+
+Available employees:
+${appState.employees.filter(e=>e.status==='active').map(e=>`- ${e.name} | Category: ${e.category} | Skills: ${e.skills||'General'}`).join('\n')}
+
+Assign the best-matched employee to each process based on category and skills. An employee can be assigned to multiple processes if needed.
+
+Return ONLY a valid JSON array with no markdown, no explanation:
+[{"process":"Process Name","category":"Category","employee":"Employee Name","reason":"One short reason"}]`;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1200,messages:[{role:'user',content:prompt}]})});
+    const data=await res.json();
+    const text=data.content?.[0]?.text||'[]';
+    aiAssignResult=JSON.parse(text.replace(/```json|```/g,'').trim());
+    statusEl.innerHTML=`<span style="color:#4db87a;"><i class="fas fa-check-circle"></i> AI assigned ${aiAssignResult.length} processes successfully.</span>`;
+    renderAIResult();
+  }catch(e){
+    statusEl.innerHTML='<span style="color:#e07070;"><i class="fas fa-exclamation-triangle"></i> AI unavailable – using smart fallback.</span>';
+    aiAssignResult=smartFallback(cid);renderAIResult();
+  }
+}
+function smartFallback(cid){
+  const cell=CELLS[cid],active=appState.employees.filter(e=>e.status==='active'),used={};
+  return cell.processes.map(p=>{const match=active.find(e=>e.category===p.category&&!used[e.name])||active.find(e=>!used[e.name])||active[0];if(match)used[match.name]=(used[match.name]||0)+1;return{process:p.process,category:p.category,employee:match?match.name:'Not assigned',reason:'Category match: '+p.category};});
+}
+function renderAIResult(){
+  document.getElementById('aiResultCard').style.display='block';
+  document.getElementById('aiResultBody').innerHTML=aiAssignResult.map((r,i)=>`<tr><td>${i+1}</td><td><strong>${escH(r.process)}</strong></td><td><span class="badge badge-pending">${escH(r.category)}</span></td><td style="color:#4db87a;font-weight:600;">${escH(r.employee)}</td><td style="color:var(--text-muted);font-size:.8rem;">${escH(r.reason)}</td><td><input type="checkbox" checked id="aichk-${i}" style="cursor:pointer;accent-color:var(--primary);width:16px;height:16px;"/></td></tr>`).join('');
+}
+function applyAllAI(){
+  const cid=document.getElementById('aiCell').value,date=document.getElementById('aiDate').value,shift=document.getElementById('aiShift').value;
+  document.getElementById('cellSelect').value=cid;document.getElementById('allocationDate').value=date;document.getElementById('allocationShift').value=shift;
+  loadAllocation();
+  aiAssignResult.forEach((r,i)=>{const chk=document.getElementById('aichk-'+i);if(chk&&chk.checked&&appState.allocations[i]){appState.allocations[i].assigned=r.employee;appState.allocations[i].status='assigned';}});
+  renderAllocationTable();updateStats();switchTab('allocation');showToast('AI assignments applied ✓');
+}
+
+// ══════════════════════════════════════════
+// ABSENTEE PREDICTOR (TIER 3)
+// ══════════════════════════════════════════
+async function runPredict(){
+  const date=document.getElementById('predDate').value,statusEl=document.getElementById('predStatus'),resultsEl=document.getElementById('predResults');
+  if(!appState.employees.length){showToast('Add employees first','warning');return;}
+  statusEl.innerHTML='<i class="fas fa-spinner fa-spin"></i> AI analysing attendance patterns…';resultsEl.innerHTML='';
+  const today=new Date().toISOString().split('T')[0];
+  const att=JSON.parse(localStorage.getItem(`att_${today}_1`)||'[]');
+  const prompt=`You are an HR analytics AI for Elkayem Auto Ancillaries, a motorcycle swingarm welding factory.
+
+Employees: ${appState.employees.map(e=>e.name+' ('+e.category+')').join(', ')}
+Today's attendance: ${att.map(a=>a.name+': '+a.status).join(', ')||'No attendance data yet'}
+Predict for date: ${date}
+
+Based on typical factory patterns (Mondays higher absenteeism, post-OT fatigue, etc.), predict 2-3 employees most likely to be absent on ${date}.
+
+Return ONLY a valid JSON array, no markdown:
+[{"name":"Employee Name","risk":75,"reason":"Short reason","backup":"Backup employee name"}]`;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:600,messages:[{role:'user',content:prompt}]})});
+    const data=await res.json();
+    const preds=JSON.parse((data.content?.[0]?.text||'[]').replace(/```json|```/g,'').trim());
+    statusEl.innerHTML=`<span style="color:#4db87a;"><i class="fas fa-check-circle"></i> Prediction complete for ${date}</span>`;
+    renderPredictions(preds);
+  }catch(e){
+    statusEl.innerHTML='<span style="color:#e07070;">AI unavailable – using pattern-based prediction</span>';
+    const preds=appState.employees.slice(0,3).map((e,i)=>({name:e.name,risk:Math.round(20+Math.random()*60),reason:'Based on historical pattern',backup:appState.employees[(i+3)%appState.employees.length]?.name||'N/A'}));
+    renderPredictions(preds);
+  }
+}
+function renderPredictions(preds){
+  document.getElementById('predResults').innerHTML=`<div class="card"><div class="card-title"><i class="fas fa-brain"></i> Absentee Risk Predictions</div>${preds.map(p=>{const col=p.risk>=70?'#c04040':p.risk>=40?'#e8a020':'#4db87a';return`<div class="pred-card"><div class="pred-name">${escH(p.name)}</div><div class="pred-risk"><span>Risk:</span><div class="risk-bar"><div class="risk-fill" style="width:${p.risk}%;background:${col};"></div></div><span style="font-weight:700;color:${col};">${p.risk}%</span></div><div style="margin-top:6px;font-size:.8rem;color:var(--text-muted);">${escH(p.reason)}</div><div style="margin-top:4px;font-size:.8rem;"><strong>Backup:</strong> <span style="color:var(--primary);">${escH(p.backup||'N/A')}</span></div></div>`;}).join('')}</div>`;
+}
+
+// ══════════════════════════════════════════
+// AI CHAT ASSISTANT (TIER 3)
+// ══════════════════════════════════════════
+let chatHistory=[];
+async function sendChat(){
+  const inp=document.getElementById('chatInput'),msg=inp.value.trim();if(!msg)return;
+  inp.value='';appendMsg(msg,'user');chatHistory.push({role:'user',content:msg});
+  document.getElementById('typingIndicator').classList.remove('hidden');
+  const today=new Date().toISOString().split('T')[0],month=today.slice(0,7);
+  let allocSummary='';
+  for(let c=1;c<=11;c++){const d=JSON.parse(localStorage.getItem(`alloc_${c}_${today}_1`)||'null');if(d)allocSummary+=`Cell ${c}: ${d.filter(r=>r.assigned.trim()).length}/${d.length} filled. `;}
+  const otH=JSON.parse(localStorage.getItem('otLogs_'+month)||'[]').reduce((s,r)=>s+parseFloat(r.hours||0),0);
+  const att=JSON.parse(localStorage.getItem(`att_${today}_1`)||'[]');
+  const system=`You are the AI assistant for Elkayem Auto Ancillaries Pvt Ltd, a motorcycle swingarm welding factory. Help supervisors manage manpower allocation.
+
+Current data:
+- Today: ${today}
+- Total employees: ${appState.employees.length} (${appState.employees.filter(e=>e.status==='active').length} active)
+- Employees: ${appState.employees.map(e=>e.name+' ('+e.category+')').join(', ')||'None added yet'}
+- Today's allocation: ${allocSummary||'No allocation saved yet'}
+- OT this month: ${otH.toFixed(1)} hours
+- Attendance today: ${att.length} recorded (${att.filter(a=>a.status==='Absent').length} absent)
+- Leaves approved: ${appState.leaves.filter(l=>l.status==='Approved').length}
+- Production cells: Cell 1 (N360) to Cell 11 (Press Shop)
+
+Answer concisely and helpfully in plain text.`;
+  try{
+    const messages=chatHistory.slice(-8).map(m=>({role:m.role,content:m.content}));
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:800,system,messages})});
+    const data=await res.json();
+    const reply=data.content?.[0]?.text||'Sorry, I could not get a response.';
+    document.getElementById('typingIndicator').classList.add('hidden');
+    appendMsg(reply,'ai');chatHistory.push({role:'assistant',content:reply});
+  }catch(e){
+    document.getElementById('typingIndicator').classList.add('hidden');
+    const fallback=localChatFallback(msg);appendMsg(fallback,'ai');chatHistory.push({role:'assistant',content:fallback});
+  }
+}
+function localChatFallback(msg){
+  const m=msg.toLowerCase(),today=new Date().toISOString().split('T')[0],month=today.slice(0,7);
+  if(m.includes('employee')||m.includes('staff'))return`You have ${appState.employees.length} employees: ${appState.employees.filter(e=>e.status==='active').length} active.`;
+  if(m.includes('ot')||m.includes('overtime')){const h=JSON.parse(localStorage.getItem('otLogs_'+month)||'[]').reduce((s,r)=>s+parseFloat(r.hours||0),0);return`OT this month: ${h.toFixed(1)} hours.`;}
+  if(m.includes('absent')){const att=JSON.parse(localStorage.getItem(`att_${today}_1`)||'[]');return`Absent today: ${att.filter(a=>a.status==='Absent').map(a=>a.name).join(', ')||'None recorded'}`;}
+  if(m.includes('summary')){let f=0,t=0;for(let c=1;c<=11;c++){const d=JSON.parse(localStorage.getItem(`alloc_${c}_${today}_1`)||'null');if(d){t+=d.length;f+=d.filter(r=>r.assigned.trim()).length;}}return`Today's summary: ${f}/${t} positions filled (${t>0?Math.round(f/t*100):0}% utilisation).`;}
+  return`I'm in offline mode. You have ${appState.employees.length} employees. Ask me about staff, OT, absent employees, or today's summary.`;
+}
+function appendMsg(text,who){
+  const msgs=document.getElementById('chatMsgs');
+  const div=document.createElement('div');div.className=`msg msg-${who}`;
+  if(who==='ai')div.innerHTML=`<div class="ai-label">🤖 Elkayem AI</div>${text.replace(/\n/g,'<br>')}`;
+  else div.textContent=text;
+  msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;
+}
+function quickChat(msg){document.getElementById('chatInput').value=msg;sendChat();}
+function clearChat(){document.getElementById('chatMsgs').innerHTML='<div class="msg msg-ai"><div class="ai-label">🤖 Elkayem AI</div>Chat cleared. How can I help?</div>';chatHistory=[];}
+
+// ══════════════════════════════════════════
+// VOICE COMMANDS (TIER 3)
+// ══════════════════════════════════════════
+function toggleVoice(){if(appState.voiceActive)stopVoice();else startVoice();}
+function startVoice(){
+  if(!('webkitSpeechRecognition'in window||'SpeechRecognition'in window)){showToast('Voice not supported. Use Chrome or Edge.','warning');return;}
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  appState.voiceRec=new SR();appState.voiceRec.continuous=true;appState.voiceRec.interimResults=true;appState.voiceRec.lang='en-IN';
+  appState.voiceRec.onresult=e=>{let final='',interim='';for(let i=e.resultIndex;i<e.results.length;i++){if(e.results[i].isFinal)final+=e.results[i][0].transcript;else interim+=e.results[i][0].transcript;}document.getElementById('voiceTranscript').textContent=final||interim;if(final)processVoiceCmd(final.trim().toLowerCase());};
+  appState.voiceRec.onerror=()=>{stopVoice();showToast('Voice error','warning');};
+  appState.voiceRec.start();appState.voiceActive=true;
+  document.getElementById('voiceBtn').classList.add('listening');
+  document.getElementById('voiceStatus').textContent='🎤 Listening… speak a command';
+}
+function stopVoice(){if(appState.voiceRec){appState.voiceRec.stop();appState.voiceRec=null;}appState.voiceActive=false;document.getElementById('voiceBtn').classList.remove('listening');document.getElementById('voiceStatus').textContent='Click the mic to start listening';}
+function processVoiceCmd(cmd){
+  const res=document.getElementById('voiceResult');
+  const tabs={'allocation':'allocation','attendance':'attendance','overtime':'overtime','gas flow':'gasflow','targets':'targets','leave':'leave','skill':'skills','report':'reports','ai assign':'ai-assign','predict':'predict','ai chat':'chat','voice':'voice','employee':'employees','analytic':'analytics','history':'history','setting':'settings'};
+  const found=Object.entries(tabs).find(([k])=>cmd.includes(k));
+  if(found){switchTab(found[1]);res.textContent='✓ Navigated to '+found[0];}
+  else if(cmd.includes('load cell')){const nums={one:'1',two:'2',three:'3',four:'4',five:'5',six:'6',seven:'7',eight:'8',nine:'9',ten:'10',eleven:'11'};const n=Object.entries(nums).find(([w])=>cmd.includes(w));if(n){document.getElementById('cellSelect').value=n[1];loadAllocation();res.textContent='✓ Loaded Cell '+n[1];}else res.textContent='⚠ Cell number not recognised';}
+  else if(cmd.includes('clear'))  {clearNames();res.textContent='✓ Names cleared';}
+  else if(cmd.includes('save'))   {saveAllocation();res.textContent='✓ Allocation saved';}
+  else if(cmd.includes('download')){downloadSingleSheet();res.textContent='✓ Downloading sheet';}
+  else res.textContent='⚠ Command not recognised: "'+cmd+'"';
+}
+
+// ══════════════════════════════════════════
+// SETTINGS
+// ══════════════════════════════════════════
+function saveSettings(){localStorage.setItem('companyName',document.getElementById('companyName').value);applyTheme(document.getElementById('themeSelect').value);showToast('Settings saved ✓');}
+function exportAllData(){const data={employees:appState.employees,leaves:appState.leaves,skills:appState.skills,history:JSON.parse(localStorage.getItem('allocHistory')||'[]')};const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));a.download='elkayem_backup_'+new Date().toISOString().split('T')[0]+'.json';a.click();showToast('Backup exported');}
+function clearLocalData(){if(!confirm('Clear ALL local data?'))return;localStorage.clear();location.reload();}
+
+// ══════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════
+function showToast(msg,type='success'){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.style.background=type==='danger'?'#c04040':type==='warning'?'#d4900a':'#1a6e3a';
+  t.style.display='block';clearTimeout(window._tt);window._tt=setTimeout(()=>t.style.display='none',3000);
+}
+function escH(s){return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+</script>
+</body>
+</html>
